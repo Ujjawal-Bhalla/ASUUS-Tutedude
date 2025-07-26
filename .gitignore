@@ -1,16 +1,60 @@
-# Node modules
-node_modules/
+# === Node Modules ===
 
-# Environment variables
-.env
+node\_modules/
 
-# Build outputs
+# === Logs ===
+
+logs/
+*.log
+npm-debug.log*
+
+# === Runtime Files ===
+
 dist/
 build/
 
-# Logs
-*.log
+# === Vite Cache ===
 
-# OS-specific
-.DS_Store
+.vite/
+
+# === Environment Variables ===
+
+.env
+.env.\*
+
+# === OS-specific ===
+
+.DS\_Store
 Thumbs.db
+\*.swp
+\*.swo
+
+# === Editor Configs ===
+
+.vscode/
+.idea/
+
+# === Parcel/Next/Other Caches ===
+
+.cache/
+.next/
+
+# === Output and Coverage ===
+
+coverage/
+
+# === Database Files ===
+
+\*.sqlite
+\*.db
+
+# === Misc ===
+
+pids/
+\*.pid
+\*.pid.lock
+
+# === Local Postgres Dump Files ===
+
+\*.dump
+\*.sql
