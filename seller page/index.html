@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-en="GCommerce Seller" data-hi="जीकॉमर्स विक्रेता">GCommerce Seller</title>
+    <!-- Link to your custom CSS file -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter for a clean, professional look -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body data-lang="en">
+    <!-- The main root div where your React app will be rendered -->
+    <div id="root"></div>
+
+    <!-- React and ReactDOM CDNs -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel Standalone for client-side JSX transpilation -->
+    <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!--
+        IMPORTANT:
+        1. We use type="text/babel" for App.js so Babel processes its JSX.
+        2. When Babel processes a top-level function like 'App' and 'setupLanguageToggle'
+           in a script with type="text/babel", they become globally available.
+           Thus, we don't use 'import' or 'export' in the HTML script tags.
+    -->
+    <script type="text/babel" src="./App.js"></script>
+
+    <!-- This script runs after App.js has been processed by Babel -->
+    <script type="text/babel">
+        // Ensure the global language toggle setup runs once the DOM is ready.
+        // `setupLanguageToggle` is defined in App.js and made global by Babel.
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof setupLanguageToggle !== 'undefined') {
+                setupLanguageToggle();
+            } else {
+                console.warn("setupLanguageToggle function not found. Language setup might not work.");
+            }
+        });
+
+        // Render the main React App component.
+        // `App` is defined in App.js and made global by Babel.
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
