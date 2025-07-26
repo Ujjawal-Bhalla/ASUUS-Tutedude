@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-en="GCommerce Sign Up" data-hi="जीकॉमर्स साइन अप">GCommerce Sign Up</title>
+    <!-- Link to external CSS file -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4" data-lang="en">
+    <div class="bg-white rounded-xl shadow-lg p-8 md:p-12 max-w-4xl w-full text-center">
+        <!-- Logo/Site Name -->
+        <div class="flex items-center justify-between mb-8">
+            <span class="font-bold text-3xl text-gray-800">GCommerce</span>
+            <!-- Language Toggle Button -->
+            <button id="langToggle" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                <span data-en="हिन्दी" data-hi="English">हिन्दी</span>
+            </button>
+        </div>
+
+        <!-- Welcome Section -->
+        <h1 class="text-5xl md:text-6xl font-extrabold text-gray-900 mb-4">
+            <span data-en="Welcome to" data-hi="आपका स्वागत है">Welcome to</span> <br class="md:hidden"> <span class="text-purple-700">GCommerce</span>
+        </h1>
+        <p class="text-lg md:text-xl text-gray-600 mb-10" data-en="Your trusted marketplace connecting buyers and sellers worldwide" data-hi="आपका विश्वसनीय बाज़ार जो दुनिया भर के खरीदारों और विक्रेताओं को जोड़ता है">
+            Your trusted marketplace connecting buyers and sellers worldwide
+        </p>
+
+        <!-- Buyer and Seller Cards -->
+        <div class="flex flex-col md:flex-row justify-center gap-6 mb-8">
+            <!-- Buyer Card -->
+            <div id="buyerCard" class="flex flex-col items-center bg-white border border-gray-200 rounded-xl p-6 md:p-8 w-full md:w-1/2 cursor-pointer hover:shadow-md transition-shadow">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.15-4.64 2.15-4.64V7.874m-11.97 4.37h-.007c-.048 0-.093.003-.136.007a1.15 1.15 0 0 1-.22-.05L2.25 10.5V15m10.5-11.25h1.312c.724 0 1.45.094 2.172.292 1.325.371 2.564 1.29 3.522 2.372a4.485 4.485 0 0 0 1.205 2.78c.247.247.47.49.693.733.155.155.294.316.425.483L21 11.25m-9.75 3c-.161 0-.32-.02-.477-.059A1.15 1.15 0 0 1 9.75 12h-.007c-.473 0-.937.065-1.385.187M9.75 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.15-4.64 2.15-4.64V7.874m-11.97 4.37h-.007c-.048 0-.093.003-.136.007a1.15 1.15 0 0 1-.22-.05L2.25 10.5V15m10.5-11.25h1.312c.724 0 1.45.094 2.172.292 1.325.371 2.564 1.29 3.522 2.372a4.485 4.485 0 0 0 1.205 2.78c.247.247.47.49.693.733.155.155.294.316.425.483L21 11.25m-9.75 3c-.161 0-.32-.02-.477-.059A1.15 1.15 0 0 1 9.75 12h-.007c-.473 0-.937.065-1.385.187M9.75 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.15-4.64 2.15-4.64V7.874m-11.97 4.37h-.007c-.048 0-.093.003-.136.007a1.15 1.15 0 0 1-.22-.05L2.25 10.5V15m10.5-11.25h1.312c.724 0 1.45.094 2.172.292 1.325.371 2.564 1.29 3.522 2.372a4.485 4.485 0 0 0 1.205 2.78c.247.247.47.49.693.733.155.155.294.316.425.483L21 11.25m-9.75 3c-.161 0-.32-.02-.477-.059A1.15 1.15 0 0 1 9.75 12h-.007c-.473 0-.937.065-1.385.187" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2" data-en="For Buyers" data-hi="खरीददारों के लिए">For Buyers</h3>
+                <p class="text-gray-600 text-center" data-en="Discover amazing products from verified sellers with secure payment options." data-hi="सुरक्षित भुगतान विकल्पों के साथ सत्यापित विक्रेताओं से अद्भुत उत्पाद खोजें।">
+                    Discover amazing products from verified sellers with secure payment options.
+                </p>
+                <button id="signupBuyerBtn" class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2" data-en="Sign Up as Buyer" data-hi="खरीदार के रूप में साइन अप करें">
+                    Sign Up as Buyer
+                </button>
+            </div>
+
+            <!-- Seller Card -->
+            <div id="sellerCard" class="flex flex-col items-center bg-white border border-gray-200 rounded-xl p-6 md:p-8 w-full md:w-1/2 cursor-pointer hover:shadow-md transition-shadow">
+                <div class="icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 21v-7.5m-3 0V21m0 0l3 3 3-3m-6 0h6m-7.5-6H2.25c-.621 0-1.125-.504-1.125-1.125V10.5m11.25-4.5V2.25c0-.621-.504-1.125-1.125-1.125H9.375c-.621 0-1.125.504-1.125 1.125v4.125m3.75-4.125h.008v.008h-.008V2.25zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zM19.5 9.75h-.008v.008h.008V9.75zm-1.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm3 0h-.008v.008h.008V9.75zM16.5 9.75h-.008v.008h.008V9.75zM12 21v-7.5m-3 0V21m0 0l3 3 3-3m-6 0h6m-7.5-6H2.25c-.621 0-1.125-.504-1.125-1.125V10.5m11.25-4.5V2.25c0-.621-.504-1.125-1.125-1.125H9.375c-.621 0-1.125.504-1.125 1.125v4.125m3.75-4.125h.008v.008h-.008V2.25zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zM19.5 9.75h-.008v.008h.008V9.75zm-1.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0zm3 0h-.008v.008h.008V9.75zM16.5 9.75h-.008v.008h.008V9.75z" />
+                    </svg>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-800 mb-2" data-en="For Sellers" data-hi="विक्रेताओं के लिए">For Sellers</h3>
+                <p class="text-gray-600 text-center" data-en="Grow your business with our powerful seller tools and analytics." data-hi="हमारे शक्तिशाली विक्रेता उपकरणों और विश्लेषणों के साथ अपने व्यवसाय को बढ़ाएँ।">
+                    Grow your business with our powerful seller tools and analytics.
+                </p>
+                <button id="signupSellerBtn" class="mt-4 px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2" data-en="Sign Up as Seller" data-hi="विक्रेता के रूप में साइन अप करें">
+                    Sign Up as Seller
+                </button>
+            </div>
+        </div>
+
+        <!-- Already have an account link -->
+        <p class="text-gray-500 text-md">
+            <a href="#" id="loginLink" class="text-purple-600 hover:underline" data-en="Already have an account? Log in here." data-hi="पहले से ही एक खाता है? यहां लॉग इन करें।">
+                Already have an account? Log in here.
+            </a>
+        </p>
+    </div>
+
+    <!-- Buyer Sign Up Modal -->
+    <div id="buyerSignupModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-lg p-8 w-full max-w-md relative" onclick="event.stopPropagation()">
+            <button class="close-btn absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+            <h2 class="text-2xl font-bold mb-6 text-center" data-en="Buyer Sign Up" data-hi="खरीदार साइन अप">Buyer Sign Up</h2>
+            <form>
+                <div class="mb-4">
+                    <label for="buyerUsername" class="block text-gray-700 text-sm font-bold mb-2" data-en="Username" data-hi="यूजरनेम">Username</label>
+                    <input type="text" id="buyerUsername" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter your username" data-hi-placeholder="अपना यूजरनेम दर्ज करें" placeholder="Enter your username">
+                </div>
+                <div class="mb-4">
+                    <label for="buyerPassword" class="block text-gray-700 text-sm font-bold mb-2" data-en="Password" data-hi="पासवर्ड">Password</label>
+                    <input type="password" id="buyerPassword" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter your password" data-hi-placeholder="अपना पासवर्ड दर्ज करें" placeholder="Enter your password">
+                </div>
+                <div class="mb-4">
+                    <label for="buyerConfirmPassword" class="block text-gray-700 text-sm font-bold mb-2" data-en="Confirm Password" data-hi="पासवर्ड की पुष्टि करें">Confirm Password</label>
+                    <input type="password" id="buyerConfirmPassword" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Confirm your password" data-hi-placeholder="अपने पासवर्ड की पुष्टि करें" placeholder="Confirm your password">
+                </div>
+                <div class="mb-4">
+                    <label for="buyerMobile" class="block text-gray-700 text-sm font-bold mb-2" data-en="Mobile No." data-hi="मोबाइल नंबर">Mobile No.</label>
+                    <input type="tel" id="buyerMobile" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter your mobile number" data-hi-placeholder="अपना मोबाइल नंबर दर्ज करें" placeholder="Enter your mobile number">
+                </div>
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="w-1/2 pr-2">
+                        <label for="buyerOtp" class="block text-gray-700 text-sm font-bold mb-2" data-en="OTP" data-hi="ओटीपी">OTP</label>
+                        <input type="text" id="buyerOtp" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter OTP" data-hi-placeholder="ओटीपी दर्ज करें" placeholder="Enter OTP">
+                    </div>
+                    <div class="w-1/2 pl-2">
+                        <button type="button" class="bg-gray-200 text-gray-700 py-2 px-4 rounded hover:bg-gray-300 transition-colors w-full" data-en="Send OTP" data-hi="ओटीपी भेजें">Send OTP</button>
+                    </div>
+                </div>
+                <div class="mb-6">
+                    <label for="buyerCaptcha" class="block text-gray-700 text-sm font-bold mb-2" data-en="Captcha" data-hi="कैप्चा">Captcha</label>
+                    <div class="flex items-center">
+                        <input type="text" id="buyerCaptcha" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter captcha" data-hi-placeholder="कैप्चा दर्ज करें" placeholder="Enter captcha">
+                        <span class="ml-3 px-4 py-2 bg-gray-100 rounded text-gray-600 font-semibold" data-en="ABC123" data-hi="एबीसी१२३">ABC123</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" data-en="Sign Up" data-hi="साइन अप करें">
+                        Sign Up
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Seller Sign Up Modal -->
+    <div id="sellerSignupModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-lg p-8 w-full max-w-md relative" onclick="event.stopPropagation()">
+            <button class="close-btn absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+            <h2 class="text-2xl font-bold mb-6 text-center" data-en="Seller Sign Up" data-hi="विक्रेता साइन अप">Seller Sign Up</h2>
+            <form>
+                <div class="mb-4">
+                    <label for="sellerUsername" class="block text-gray-700 text-sm font-bold mb-2" data-en="Username" data-hi="यूजरनेम">Username</label>
+                    <input type="text" id="sellerUsername" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter your username" data-hi-placeholder="अपना यूजरनेम दर्ज करें" placeholder="Enter your username">
+                </div>
+                <div class="mb-4">
+                    <label for="sellerPassword" class="block text-gray-700 text-sm font-bold mb-2" data-en="Password" data-hi="पासवर्ड">Password</label>
+                    <input type="password" id="sellerPassword" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter your password" data-hi-placeholder="अपना पासवर्ड दर्ज करें" placeholder="Enter your password">
+                </div>
+                <div class="mb-4">
+                    <label for="sellerConfirmPassword" class="block text-gray-700 text-sm font-bold mb-2" data-en="Confirm Password" data-hi="पासवर्ड की पुष्टि करें">Confirm Password</label>
+                    <input type="password" id="sellerConfirmPassword" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Confirm your password" data-hi-placeholder="अपने पासवर्ड की पुष्टि करें" placeholder="Confirm your password">
+                </div>
+                <div class="mb-4">
+                    <label for="sellerMobile" class="block text-gray-700 text-sm font-bold mb-2" data-en="Mobile No." data-hi="मोबाइल नंबर">Mobile No.</label>
+                    <input type="tel" id="sellerMobile" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter your mobile number" data-hi-placeholder="अपना मोबाइल नंबर दर्ज करें" placeholder="Enter your mobile number">
+                </div>
+                <div class="mb-4 flex items-center justify-between">
+                    <div class="w-1/2 pr-2">
+                        <label for="sellerOtp" class="block text-gray-700 text-sm font-bold mb-2" data-en="OTP" data-hi="ओटीपी">OTP</label>
+                        <input type="text" id="sellerOtp" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter OTP" data-hi-placeholder="ओटीपी दर्ज करें" placeholder="Enter OTP">
+                    </div>
+                    <div class="w-1/2 pl-2">
+                        <button type="button" class="bg-gray-200 text-gray-700 py-2 px-4 rounded hover:bg-gray-300 transition-colors w-full" data-en="Send OTP" data-hi="ओटीपी भेजें">Send OTP</button>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label for="sellerGstin" class="block text-gray-700 text-sm font-bold mb-2" data-en="GSTIN" data-hi="जीएसटीआईएन">GSTIN</label>
+                    <input type="text" id="sellerGstin" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter your GSTIN" data-hi-placeholder="अपना जीएसटीआईएन दर्ज करें" placeholder="Enter your GSTIN">
+                </div>
+                <div class="mb-6">
+                    <label for="sellerCaptcha" class="block text-gray-700 text-sm font-bold mb-2" data-en="Captcha" data-hi="कैप्चा">Captcha</label>
+                    <div class="flex items-center">
+                        <input type="text" id="sellerCaptcha" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter captcha" data-hi-placeholder="कैप्चा दर्ज करें" placeholder="Enter captcha">
+                        <span class="ml-3 px-4 py-2 bg-gray-100 rounded text-gray-600 font-semibold" data-en="XYZ789" data-hi="एक्सवाईजेड७८९">XYZ789</span>
+                    </div>
+                </div>
+                <div class="flex items-center justify-center">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" data-en="Sign Up" data-hi="साइन अप करें">
+                        Sign Up
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 hidden">
+        <div class="bg-white rounded-lg p-8 w-full max-w-md relative" onclick="event.stopPropagation()">
+            <button class="close-btn absolute top-3 right-3 text-gray-500 hover:text-gray-700 text-2xl font-bold">&times;</button>
+            <h2 class="text-2xl font-bold mb-6 text-center" data-en="Login" data-hi="लॉग इन करें">Login</h2>
+            <form>
+                <div class="mb-4">
+                    <label for="loginUsername" class="block text-gray-700 text-sm font-bold mb-2" data-en="Username" data-hi="यूजरनेम">Username</label>
+                    <input type="text" id="loginUsername" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter your username" data-hi-placeholder="अपना यूजरनेम दर्ज करें" placeholder="Enter your username">
+                </div>
+                <div class="mb-6">
+                    <label for="loginPassword" class="block text-gray-700 text-sm font-bold mb-2" data-en="Password" data-hi="पासवर्ड">Password</label>
+                    <input type="password" id="loginPassword" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline" data-en-placeholder="Enter your password" data-hi-placeholder="अपना पासवर्ड दर्ज करें" placeholder="Enter your password">
+                </div>
+                <div class="flex items-center justify-center">
+                    <button type="submit" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" data-en="Login" data-hi="लॉग इन करें">
+                        Login
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const langToggleBtn = document.getElementById('langToggle');
+            const body = document.body;
+            // Select all elements that have data-en or data-hi attributes
+            const translatableElements = document.querySelectorAll('[data-en], [data-hi]');
+            const translatablePlaceholders = document.querySelectorAll('[data-en-placeholder], [data-hi-placeholder]');
+
+            // Get references to buttons and modals
+            const signupBuyerBtn = document.getElementById('signupBuyerBtn');
+            const signupSellerBtn = document.getElementById('signupSellerBtn');
+            const loginLink = document.getElementById('loginLink');
+
+            const buyerSignupModal = document.getElementById('buyerSignupModal');
+            const sellerSignupModal = document.getElementById('sellerSignupModal');
+            const loginModal = document.getElementById('loginModal');
+
+            // Select all close buttons
+            const closeButtons = document.querySelectorAll('.close-btn');
+
+            // Function to update text content and placeholders based on current language
+            const updateTexts = (lang) => {
+                translatableElements.forEach(element => {
+                    const text = element.getAttribute(`data-${lang}`);
+                    if (text) {
+                        element.textContent = text;
+                    }
+                });
+                translatablePlaceholders.forEach(element => {
+                    const placeholderText = element.getAttribute(`data-${lang}-placeholder`);
+                    if (placeholderText) {
+                        element.placeholder = placeholderText;
+                    }
+                });
+                // Update the toggle button's text to show the *next* language
+                if (lang === 'en') {
+                    langToggleBtn.querySelector('span').textContent = langToggleBtn.querySelector('span').getAttribute('data-en');
+                } else {
+                    langToggleBtn.querySelector('span').textContent = langToggleBtn.querySelector('span').getAttribute('data-hi');
+                }
+            };
+
+            // Function to show a modal
+            const showModal = (modalElement) => {
+                modalElement.classList.remove('hidden');
+                body.classList.add('overflow-hidden'); // Prevent scrolling on body
+                updateTexts(body.getAttribute('data-lang')); // Ensure modal text is correct
+            };
+
+            // Function to hide a modal
+            const hideModal = (modalElement) => {
+                modalElement.classList.add('hidden');
+                body.classList.remove('overflow-hidden'); // Restore scrolling
+            };
+
+            // Event Listeners for opening modals
+            signupBuyerBtn.addEventListener('click', () => showModal(buyerSignupModal));
+            signupSellerBtn.addEventListener('click', () => showModal(sellerSignupModal));
+            loginLink.addEventListener('click', (e) => {
+                e.preventDefault(); // Prevent default link behavior
+                showModal(loginModal);
+            });
+
+            // Event Listeners for closing modals (clicking X or outside)
+            closeButtons.forEach(button => {
+                button.addEventListener('click', (e) => {
+                    hideModal(e.target.closest('.fixed'));
+                });
+            });
+
+            // Close modal when clicking outside of the modal content
+            buyerSignupModal.addEventListener('click', (e) => { if (e.target === buyerSignupModal) hideModal(buyerSignupModal); });
+            sellerSignupModal.addEventListener('click', (e) => { if (e.target === sellerSignupModal) hideModal(sellerSignupModal); });
+            loginModal.addEventListener('click', (e) => { if (e.target === loginModal) hideModal(loginModal); });
+
+            // Set initial language
+            updateTexts(body.getAttribute('data-lang'));
+
+            // Event listener for the main language toggle button
+            langToggleBtn.addEventListener('click', () => {
+                let currentLang = body.getAttribute('data-lang');
+                let newLang = currentLang === 'en' ? 'hi' : 'en';
+                body.setAttribute('data-lang', newLang);
+                updateTexts(newLang);
+            });
+        });
+    </script>
+</body>
+</html>
