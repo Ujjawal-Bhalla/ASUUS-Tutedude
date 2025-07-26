@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Raw Material Price Predictor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f1f3f8;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 40px;
+        }
+
+        h2 {
+            color: #2b2d42;
+        }
+
+        form {
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: bold;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 18px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            background-color: #4a90e2;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #357abd;
+        }
+
+        #result {
+            margin-top: 25px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <h2>Predict Raw Material Price</h2>
+    <form id="predictForm">
+        <label for="day">Day of Year (1-365):</label>
+        <input type="number" id="day" name="day" required><br><br>
+
+        <label for="weather">Weather:</label>
+        <select id="weather" name="weather">
+            <option value="Sunny">Sunny</option>
+            <option value="Cloudy">Cloudy</option>
+            <option value="Rainy">Rainy</option>
+        </select><br><br>
+
+        <label for="demand">Demand:</label>
+        <select id="demand" name="demand">
+            <option value="Low">Low</option>
+            <option value="Medium">Medium</option>
+            <option value="High">High</option>
+        </select><br><br>
+
+        <button type="submit">Predict</button>
+    </form>
+
+    <h3 id="result"></h3>
+
+    <script>
+        document.getElementById("predictForm").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const day = document.getElementById("day").value;
+            const weather = document.getElementById("weather").value;
+            const demand = document.getElementById("demand").value;
+
+            const response = await fetch("/predict", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ day, weather, demand })
+            });
+
+            const data = await response.json();
+            document.getElementById("result").innerText = "Predicted Price: ₹" + data.predicted_price.toFixed(2);
+        });
+    </script>
+</body>
+</html>
