@@ -4,19 +4,17 @@ const connectDB = async () => {
   try {
     // Check if MONGODB_URI is provided
     if (!process.env.MONGODB_URI) {
+      console.error('MONGODB_URI environment variable is missing');
       throw new Error('MONGODB_URI environment variable is required for production');
     }
 
+    console.log('Attempting to connect to MongoDB...');
+    
     const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      // Connection options for better reliability
-      maxPoolSize: 10,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      bufferCommands: false,
-      // Removed deprecated options
-      // bufferMaxEntries: 0, // DEPRECATED
-      // useNewUrlParser: true, // DEPRECATED
-      // useUnifiedTopology: true, // DEPRECATED
+      // Minimal connection options for stability
+      maxPoolSize: 5,
+      serverSelectionTimeoutMS: 10000,
+      socketTimeoutMS: 30000,
     });
     
     console.log(`MongoDB Connected: ${conn.connection.host}`);
@@ -37,12 +35,15 @@ const connectDB = async () => {
       process.exit(0);
     });
     
+    return conn;
+    
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    // Don't exit immediately in production, let the app handle it
+    // In production, don't exit - let the app handle it gracefully
     if (process.env.NODE_ENV === 'development') {
       process.exit(1);
     }
+    // In production, throw the error but don't crash
     throw error;
   }
 };

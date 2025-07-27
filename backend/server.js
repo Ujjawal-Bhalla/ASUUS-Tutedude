@@ -8,8 +8,27 @@ const authRoutes = require("./routes/auth");
 
 const app = express();
 
-// Connect to MongoDB
-connectDB();
+// Connect to MongoDB with error handling
+const initializeServer = async () => {
+  try {
+    await connectDB();
+    
+    // Server startup moved to initializeServer function
+  } catch (error) {
+    console.error('Failed to initialize server:', error);
+    // In production, keep the server running even if MongoDB fails
+    if (process.env.NODE_ENV === 'development') {
+      process.exit(1);
+    }
+    
+    // Start server without MongoDB in production
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`Server running on port ${PORT} (MongoDB connection failed)`);
+    });
+  }
+};
+
+initializeServer();
 
 // Middleware
 app.use(cors());
