@@ -115,7 +115,7 @@ export default function SignupSupplier({ onClose, language }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] relative overflow-hidden flex flex-col">
         {/* Header */}
         <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 text-white">
           <button
@@ -133,7 +133,7 @@ export default function SignupSupplier({ onClose, language }) {
         </div>
 
         {/* Form */}
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto flex-1">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
