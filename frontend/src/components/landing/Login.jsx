@@ -96,6 +96,10 @@ export default function Login({ onClose, language }) {
           localStorage.setItem('user', JSON.stringify(data.data.user));
           localStorage.setItem('token', data.data.token);
           
+          // Debug: Log the user role
+          console.log('User role from backend:', data.data.user.role);
+          console.log('Redirecting to:', data.data.user.role === 'buyer' ? '/#/buyer-dashboard' : '/#/seller-dashboard');
+          
           // Force a page reload to update the user state
           window.location.href = data.data.user.role === 'buyer' ? '/#/buyer-dashboard' : '/#/seller-dashboard';
           return;

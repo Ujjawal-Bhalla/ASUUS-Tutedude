@@ -28,13 +28,23 @@ export default function SellerDashboard({ language }) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
 
-  // Mock user data
-  const user = {
-    name: 'Ventrest Vendor',
-    email: 'vendor@ventrest.com',
-    profilePic: 'https://placehold.co/100x100/4F46E5/FFF?text=VV',
-    role: 'vendor'
-  };
+  // Get user data from localStorage
+  const [user, setUser] = useState(null);
+  
+  useEffect(() => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (error) {
+        console.error('Error parsing saved user:', error);
+        localStorage.removeItem('user');
+        navigate('/');
+      }
+    } else {
+      navigate('/');
+    }
+  }, [navigate]);
 
   // Handle logout
   const handleLogout = () => {
@@ -103,6 +113,18 @@ export default function SellerDashboard({ language }) {
   const handleDeleteProduct = (productId) => {
     setProducts(prev => prev.filter(p => p.id !== productId));
   };
+
+  // Show loading if user data is not loaded yet
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
