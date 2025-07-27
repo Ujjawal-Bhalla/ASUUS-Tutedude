@@ -68,6 +68,13 @@ export default function Login({ onClose, language }) {
 
     setIsLoading(true);
     
+    // Debug: Show all environment variables
+    console.log('=== Environment Variables Debug ===');
+    console.log('All env vars:', import.meta.env);
+    console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
+    console.log('VITE_API_URL type:', typeof import.meta.env.VITE_API_URL);
+    console.log('VITE_API_URL length:', import.meta.env.VITE_API_URL?.length);
+    
     try {
       // Check if API URL is configured
       const apiUrl = import.meta.env.VITE_API_URL || 'https://asuus-tutedude-production.up.railway.app';
