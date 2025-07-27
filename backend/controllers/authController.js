@@ -64,14 +64,27 @@ const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    // Validate input
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    console.log('Login attempt for email:', email);
+
     // Find user by email
     const user = await User.findOne({ email });
     if (!user) {
+      console.log('User not found for email:', email);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
+
+    console.log('User found, role:', user.role);
 
     // Check if user is active
     if (!user.isActive) {
@@ -84,11 +97,14 @@ const login = async (req, res) => {
     // Check password
     const isPasswordValid = await user.comparePassword(password);
     if (!isPasswordValid) {
+      console.log('Invalid password for email:', email);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
+
+    console.log('Password valid, generating token');
 
     // Update last login
     user.lastLogin = new Date();
@@ -97,11 +113,14 @@ const login = async (req, res) => {
     // Generate token
     const token = generateToken(user._id);
 
+    const userResponse = user.toJSON();
+    console.log('Login successful for user:', userResponse.email, 'Role:', userResponse.role);
+    
     res.json({
       success: true,
       message: 'Login successful',
       data: {
-        user: user.toJSON(),
+        user: userResponse,
         token
       }
     });
