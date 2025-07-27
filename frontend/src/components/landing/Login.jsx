@@ -69,8 +69,16 @@ export default function Login({ onClose, language }) {
     setIsLoading(true);
     
     try {
+      // Check if API URL is configured
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        throw new Error('API URL not configured. Please set VITE_API_URL environment variable.');
+      }
+      
+      console.log('Making API call to:', `${apiUrl}/api/auth/login`);
+      
       // Try to authenticate with database
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+      const response = await fetch(`${apiUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,12 +119,17 @@ export default function Login({ onClose, language }) {
         setErrors(prev => ({ ...prev, general: data.message }));
       }
       
-    } catch (error) {
-      setErrors(prev => ({ 
-        ...prev, 
-        general: language === 'hi' 
-          ? 'लॉगिन में त्रुटि। कृपया पुनः प्रयास करें।' 
-          : 'Login error. Please try again.' 
+        } catch (error) {
+      console.error('Login error:', error);
+      setErrors(prev => ({
+        ...prev,
+        general: language === 'hi'
+          ? error.message.includes('API URL not configured') 
+            ? 'API कॉन्फ़िगरेशन त्रुटि। कृपया विकासकर्ता से संपर्क करें।'
+            : 'लॉगिन में त्रुटि। कृपया पुनः प्रयास करें।'
+          : error.message.includes('API URL not configured')
+            ? 'API configuration error. Please contact developer.'
+            : 'Login error. Please try again.'
       }));
     } finally {
       setIsLoading(false);

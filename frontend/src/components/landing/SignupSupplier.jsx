@@ -98,7 +98,15 @@ export default function SignupSupplier({ onClose, language }) {
     
     try {
       // Try to register with real database
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
+      // Check if API URL is configured
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        throw new Error('API URL not configured. Please set VITE_API_URL environment variable.');
+      }
+      
+      console.log('Making API call to:', `${apiUrl}/api/auth/register`);
+      
+      const response = await fetch(`${apiUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
