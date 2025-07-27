@@ -111,6 +111,9 @@ export default function Login({ onClose, language }) {
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('token', token);
         
+                // Close the modal first
+        onClose();
+        
         // Navigate based on user role from database
         if (user.role === 'vendor') {
           window.location.href = '/#/vendor-dashboard';
@@ -118,10 +121,10 @@ export default function Login({ onClose, language }) {
           window.location.href = '/#/supplier-dashboard';
         } else {
           console.error('Unknown user role:', user.role);
-          setErrors(prev => ({ 
-            ...prev, 
-            general: language === 'hi' 
-              ? 'अज्ञात उपयोगकर्ता भूमिका' 
+          setErrors(prev => ({
+            ...prev,
+            general: language === 'hi'
+              ? 'अज्ञात उपयोगकर्ता भूमिका'
               : 'Unknown user role'
           }));
         }
