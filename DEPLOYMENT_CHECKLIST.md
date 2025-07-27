@@ -51,17 +51,21 @@ NODE_ENV=production
 ## 🚨 Pre-Deployment Checklist:
 
 ### Frontend (Vercel):
-- [x] Build command: `cd frontend && npm run build`
-- [x] Output directory: `frontend/dist`
+- [x] Build command: `npm run build`
+- [x] Output directory: `dist`
 - [x] Framework: `vite`
 - [x] Environment variables set
+- [x] vercel.json moved to frontend directory
 
 ### Backend (Railway):
 - [x] MongoDB Atlas cluster created
 - [x] Connection string obtained
 - [x] Environment variables configured
-- [ ] Railway project connected
-- [ ] Root directory set to `backend/`
+- [x] Railway project connected
+- [x] Root directory set to `backend/`
+- [x] Environment variables set in Railway dashboard
+- [x] MongoDB connection options fixed
+- [ ] Deployment stable (intermittent 502 errors)
 
 ## 🧪 Post-Deployment Testing:
 
@@ -79,7 +83,7 @@ NODE_ENV=production
 
 ## 🔗 Final URLs:
 - **Frontend**: `https://your-app.vercel.app`
-- **Backend**: `https://your-app.railway.app`
+- **Backend**: `https://asuus-tutedude-production.up.railway.app`
 
 ## 📝 Notes:
 - Frontend navigation is **100% Vercel-ready**

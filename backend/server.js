@@ -29,8 +29,25 @@ const initializeServer = async () => {
     console.log('✅ MongoDB connected successfully');
     
     // Start server after successful MongoDB connection
-    app.listen(PORT, "0.0.0.0", () => {
+    const server = app.listen(PORT, "0.0.0.0", () => {
       console.log(`✅ Server running on port ${PORT}`);
+    });
+
+    // Graceful shutdown handling
+    process.on('SIGTERM', () => {
+      console.log('🔄 Received SIGTERM, shutting down gracefully...');
+      server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+      });
+    });
+
+    process.on('SIGINT', () => {
+      console.log('🔄 Received SIGINT, shutting down gracefully...');
+      server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+      });
     });
     
   } catch (error) {
@@ -48,8 +65,25 @@ const initializeServer = async () => {
     }
     
     // Start server without MongoDB in production
-    app.listen(PORT, "0.0.0.0", () => {
+    const server = app.listen(PORT, "0.0.0.0", () => {
       console.log(`⚠️ Server running on port ${PORT} (MongoDB connection failed)`);
+    });
+
+    // Graceful shutdown handling
+    process.on('SIGTERM', () => {
+      console.log('🔄 Received SIGTERM, shutting down gracefully...');
+      server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+      });
+    });
+
+    process.on('SIGINT', () => {
+      console.log('🔄 Received SIGINT, shutting down gracefully...');
+      server.close(() => {
+        console.log('✅ Server closed');
+        process.exit(0);
+      });
     });
   }
 };
@@ -69,6 +103,16 @@ const PORT = process.env.PORT || 3000;
 
 // Routes
 app.use('/api/auth', authRoutes);
+
+// Health check route for Railway
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    memory: process.memoryUsage()
+  });
+});
 
 // Test route
 app.get("/", (req, res) => {
