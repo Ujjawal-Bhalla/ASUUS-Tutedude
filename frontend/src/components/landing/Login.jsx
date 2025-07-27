@@ -48,9 +48,6 @@ export default function Login({ onClose, language }) {
 
     setIsLoading(true);
     try {
-      // Mock delay for demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       // Check if using demo credentials
       const isDemoEmail = formData.email.includes('demo.com');
       

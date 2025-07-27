@@ -76,9 +76,6 @@ export default function SignupSupplier({ onClose, language }) {
 
     setIsLoading(true);
     try {
-      // Mock delay for demo
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
       const response = await fetch('http://localhost:3000/api/auth/register', {
         method: 'POST',
         headers: {
