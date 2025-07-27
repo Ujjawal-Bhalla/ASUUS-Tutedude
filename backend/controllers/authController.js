@@ -126,6 +126,14 @@ const login = async (req, res) => {
 
     // Update last login
     user.lastLogin = new Date();
+    
+    // Handle any remaining old role names
+    if (user.role === 'buyer') {
+      user.role = 'vendor';
+    } else if (user.role === 'seller') {
+      user.role = 'supplier';
+    }
+    
     await user.save();
 
     // Generate token
