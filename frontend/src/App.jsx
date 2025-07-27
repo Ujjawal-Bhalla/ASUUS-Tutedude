@@ -8,7 +8,7 @@ import BuyerDashboard from './pages/BuyerDashboard';
 import SignupVendor from './components/landing/SignupVendor';
 import SignupSupplier from './components/landing/SignupSupplier';
 import Login from './components/landing/Login';
-import { apiService } from './services/api';
+import apiService from './services/api';
 
 export default function App() {
   console.log('App component rendering');
