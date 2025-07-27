@@ -28,6 +28,11 @@ export default function Landing({ language }) {
     }
   ];
 
+  // Handle successful registration - show login modal
+  const handleRegistrationSuccess = () => {
+    setShowLogin(true);
+  };
+
   return (
     <div className="relative min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 overflow-hidden">
       {/* Background Pattern */}

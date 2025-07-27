@@ -1,8 +1,10 @@
 // src/components/landing/Login.jsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, X, Loader2, LogIn, Eye, EyeOff } from 'lucide-react';
 
 export default function Login({ onClose, language }) {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -49,34 +51,94 @@ export default function Login({ onClose, language }) {
       // Mock delay for demo
       await new Promise(resolve => setTimeout(resolve, 1500));
       
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
+      // Check if using demo credentials
+      const isDemoEmail = formData.email.includes('demo.com');
+      
+      if (isDemoEmail) {
+        // Use demo logic for demo credentials
+        let userRole = 'buyer'; // default
         
-        // Redirect based on user role
-        if (data.data.user.role === 'buyer') {
-          window.location.href = '/buyer-page';
-        } else {
-          window.location.href = '/seller-page';
+        // Demo logic: if email contains 'vendor' or 'seller', redirect to seller dashboard
+        if (formData.email.toLowerCase().includes('vendor') || formData.email.toLowerCase().includes('seller')) {
+          userRole = 'seller';
         }
-      } else {
-        setErrors(prev => ({ ...prev, general: data.message }));
+        
+        // Simulate successful login
+        const mockUser = {
+          name: userRole === 'seller' ? 'Ventrest Vendor' : 'Ventrest Buyer',
+          email: formData.email,
+          role: userRole,
+          profilePic: userRole === 'seller' 
+            ? 'https://placehold.co/100x100/4F46E5/FFF?text=VV' 
+            : 'https://placehold.co/100x100/4F46E5/FFF?text=VB'
+        };
+        
+        // Store user data
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        localStorage.setItem('token', 'mock-token-' + Date.now());
+        
+        // Force a page reload to update the user state
+        window.location.href = userRole === 'buyer' ? '/#/buyer-dashboard' : '/#/seller-dashboard';
+        return;
       }
+      
+      // Try to connect to backend for real credentials
+      try {
+        const response = await fetch('http://localhost:3000/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          // Store user data from database
+          localStorage.setItem('user', JSON.stringify(data.data.user));
+          localStorage.setItem('token', data.data.token);
+          
+          // Force a page reload to update the user state
+          window.location.href = data.data.user.role === 'buyer' ? '/#/buyer-dashboard' : '/#/seller-dashboard';
+          return;
+        } else {
+          setErrors(prev => ({ ...prev, general: data.message }));
+          return;
+        }
+      } catch (backendError) {
+        console.error('Backend connection failed:', backendError);
+        // Fallback to demo logic if backend is not available
+        let userRole = 'buyer'; // default
+        
+        if (formData.email.toLowerCase().includes('vendor') || formData.email.toLowerCase().includes('seller')) {
+          userRole = 'seller';
+        }
+        
+        const mockUser = {
+          name: userRole === 'seller' ? 'Ventrest Vendor' : 'Ventrest Buyer',
+          email: formData.email,
+          role: userRole,
+          profilePic: userRole === 'seller' 
+            ? 'https://placehold.co/100x100/4F46E5/FFF?text=VV' 
+            : 'https://placehold.co/100x100/4F46E5/FFF?text=VB'
+        };
+        
+        localStorage.setItem('user', JSON.stringify(mockUser));
+        localStorage.setItem('token', 'mock-token-' + Date.now());
+        
+        // Force a page reload to update the user state
+        window.location.href = userRole === 'buyer' ? '/#/buyer-dashboard' : '/#/seller-dashboard';
+      }
+      
     } catch (error) {
       console.error('Login error:', error);
-      // For demo purposes, simulate success
-      alert(language === 'hi' ? 'लॉगिन सफल! स्वागत है!' : 'Login successful! Welcome!');
-      onClose();
+      setErrors(prev => ({ 
+        ...prev, 
+        general: language === 'hi' 
+          ? 'लॉगिन में त्रुटि। कृपया पुनः प्रयास करें।' 
+          : 'Login error. Please try again.' 
+      }));
     } finally {
       setIsLoading(false);
     }
@@ -184,8 +246,14 @@ export default function Login({ onClose, language }) {
                 {language === 'hi' ? 'डेमो क्रेडेंशियल्स' : 'Demo Credentials'}
               </h4>
               <div className="text-xs text-blue-700 space-y-1">
-                <p><strong>Vendor:</strong> vendor@demo.com / password123</p>
-                <p><strong>Supplier:</strong> supplier@demo.com / password123</p>
+                <p><strong>Vendor/Supplier:</strong> vendor@demo.com / password123</p>
+                <p><strong>Buyer:</strong> buyer@demo.com / password123</p>
+                <p className="text-blue-600 mt-2">
+                  <strong>Tip:</strong> {language === 'hi' 
+                    ? 'वेंडर या सेलर के लिए ईमेल में "vendor" या "seller" शब्द जोड़ें'
+                    : 'Add "vendor" or "seller" in email for vendor/supplier access'
+                  }
+                </p>
               </div>
             </div>
           </form>

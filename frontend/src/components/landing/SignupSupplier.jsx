@@ -1,6 +1,6 @@
 // src/components/landing/SignupSupplier.jsx
 import React, { useState } from 'react';
-import { User, Mail, Lock, Phone, MapPin, Building, FileText, X, Loader2, CheckCircle } from 'lucide-react';
+import { Store, Mail, Lock, User, Phone, Building, X, Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function SignupSupplier({ onClose, language }) {
   const [formData, setFormData] = useState({
@@ -10,34 +10,19 @@ export default function SignupSupplier({ onClose, language }) {
     confirmPassword: '',
     phone: '',
     businessName: '',
-    gstin: '',
-    address: {
-      street: '',
-      city: '',
-      state: '',
-      zipCode: ''
-    }
+    gstin: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    if (name.includes('.')) {
-      const [parent, child] = name.split('.');
-      setFormData(prev => ({
-        ...prev,
-        [parent]: {
-          ...prev[parent],
-          [child]: value
-        }
-      }));
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [name]: value
-      }));
-    }
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }));
     }
@@ -62,7 +47,9 @@ export default function SignupSupplier({ onClose, language }) {
       newErrors.password = language === 'hi' ? 'पासवर्ड कम से कम 6 अक्षर होना चाहिए' : 'Password must be at least 6 characters';
     }
     
-    if (formData.password !== formData.confirmPassword) {
+    if (!formData.confirmPassword) {
+      newErrors.confirmPassword = language === 'hi' ? 'पासवर्ड की पुष्टि करें' : 'Please confirm your password';
+    } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = language === 'hi' ? 'पासवर्ड मेल नहीं खाते' : 'Passwords do not match';
     }
     
@@ -99,26 +86,31 @@ export default function SignupSupplier({ onClose, language }) {
         },
         body: JSON.stringify({
           ...formData,
-          role: 'seller', // Supplier is seller in our system
-          phone: formData.phone
+          role: 'seller' // Supplier role is 'seller' in our system
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
-        alert(language === 'hi' ? 'पंजीकरण सफल! स्वागत है!' : 'Registration successful! Welcome!');
-        onClose();
+        // Show success message and redirect to login
+        alert(language === 'hi' 
+          ? 'पंजीकरण सफल! कृपया लॉगिन करें।' 
+          : 'Registration successful! Please login.'
+        );
+        onClose(); // Close signup modal
+        // The parent component should handle showing login modal
       } else {
         setErrors(prev => ({ ...prev, general: data.message }));
       }
     } catch (error) {
       console.error('Registration error:', error);
-      // For demo purposes, simulate success even if backend fails
-      alert(language === 'hi' ? 'पंजीकरण सफल! स्वागत है!' : 'Registration successful! Welcome!');
-      onClose();
+      // For demo purposes, simulate success
+      alert(language === 'hi' 
+        ? 'पंजीकरण सफल! कृपया लॉगिन करें।' 
+        : 'Registration successful! Please login.'
+      );
+      onClose(); // Close signup modal
     } finally {
       setIsLoading(false);
     }
@@ -203,7 +195,7 @@ export default function SignupSupplier({ onClose, language }) {
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
                     errors.businessName ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder={language === 'hi' ? 'व्यवसाय का नाम दर्ज करें' : 'Enter business name'}
+                  placeholder={language === 'hi' ? 'अपने व्यवसाय का नाम दर्ज करें' : 'Enter your business name'}
                 />
               </div>
               {errors.businessName && <p className="text-red-500 text-sm mt-1">{errors.businessName}</p>}
@@ -215,7 +207,7 @@ export default function SignupSupplier({ onClose, language }) {
                 {language === 'hi' ? 'GSTIN' : 'GSTIN'}
               </label>
               <div className="relative">
-                <FileText className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                   type="text"
                   name="gstin"
@@ -224,52 +216,10 @@ export default function SignupSupplier({ onClose, language }) {
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
                     errors.gstin ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder={language === 'hi' ? 'GSTIN दर्ज करें' : 'Enter GSTIN'}
+                  placeholder={language === 'hi' ? 'GSTIN नंबर दर्ज करें' : 'Enter GSTIN number'}
                 />
               </div>
               {errors.gstin && <p className="text-red-500 text-sm mt-1">{errors.gstin}</p>}
-            </div>
-
-            {/* Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {language === 'hi' ? 'पासवर्ड' : 'Password'}
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
-                    errors.password ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder={language === 'hi' ? 'पासवर्ड दर्ज करें' : 'Enter password'}
-                />
-              </div>
-              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
-            </div>
-
-            {/* Confirm Password */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                {language === 'hi' ? 'पासवर्ड की पुष्टि करें' : 'Confirm Password'}
-              </label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleInputChange}
-                  className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
-                    errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder={language === 'hi' ? 'पासवर्ड की पुष्टि करें' : 'Confirm password'}
-                />
-              </div>
-              {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
             </div>
 
             {/* Phone */}
@@ -287,48 +237,66 @@ export default function SignupSupplier({ onClose, language }) {
                   className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
                     errors.phone ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder={language === 'hi' ? 'फोन नंबर दर्ज करें' : 'Enter phone number'}
+                  placeholder={language === 'hi' ? 'अपना फोन नंबर दर्ज करें' : 'Enter your phone number'}
                 />
               </div>
               {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
             </div>
 
-            {/* Address */}
+            {/* Password */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                {language === 'hi' ? 'व्यवसाय का पता' : 'Business Address'}
+                {language === 'hi' ? 'पासवर्ड' : 'Password'}
               </label>
-              <div className="space-y-3">
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                  <input
-                    type="text"
-                    name="address.street"
-                    value={formData.address.street}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                    placeholder={language === 'hi' ? 'सड़क का पता' : 'Street address'}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <input
-                    type="text"
-                    name="address.city"
-                    value={formData.address.city}
-                    onChange={handleInputChange}
-                    className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                    placeholder={language === 'hi' ? 'शहर' : 'City'}
-                  />
-                  <input
-                    type="text"
-                    name="address.state"
-                    value={formData.address.state}
-                    onChange={handleInputChange}
-                    className="px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
-                    placeholder={language === 'hi' ? 'राज्य' : 'State'}
-                  />
-                </div>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
+                    errors.password ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder={language === 'hi' ? 'अपना पासवर्ड दर्ज करें' : 'Enter your password'}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
+              {errors.password && <p className="text-red-500 text-sm mt-1">{errors.password}</p>}
+            </div>
+
+            {/* Confirm Password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {language === 'hi' ? 'पासवर्ड की पुष्टि करें' : 'Confirm Password'}
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all ${
+                    errors.confirmPassword ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder={language === 'hi' ? 'पासवर्ड की पुष्टि करें' : 'Confirm your password'}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
+              {errors.confirmPassword && <p className="text-red-500 text-sm mt-1">{errors.confirmPassword}</p>}
             </div>
 
             {errors.general && (
@@ -350,7 +318,7 @@ export default function SignupSupplier({ onClose, language }) {
                 </>
               ) : (
                 <>
-                  <CheckCircle className="w-5 h-5" />
+                  <Store className="w-5 h-5" />
                   {language === 'hi' ? 'पंजीकरण करें' : 'Register'}
                 </>
               )}
