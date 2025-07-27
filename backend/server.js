@@ -5,6 +5,9 @@ const connectDB = require("./mongo");
 
 // Import routes
 const authRoutes = require("./routes/auth");
+const productRoutes = require("./routes/products");
+const orderRoutes = require("./routes/orders");
+const analyticsRoutes = require("./routes/analytics");
 
 const app = express();
 
@@ -103,6 +106,9 @@ const PORT = process.env.PORT || 3000;
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 // Health check route for Railway
 app.get("/health", (req, res) => {

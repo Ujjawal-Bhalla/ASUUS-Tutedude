@@ -16,17 +16,26 @@ import {
   Eye,
   Globe,
   Bell,
-  ShoppingCart
+  ShoppingCart,
+  BarChart3,
+  Calendar,
+  TrendingDown,
+  Users
 } from 'lucide-react';
+import apiService from '../services/api';
 
 export default function SellerDashboard({ language }) {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
+  const [orders, setOrders] = useState([]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
+  const [loading, setLoading] = useState(true);
 
   // Get user data from localStorage
   const [user, setUser] = useState(null);
@@ -62,41 +71,64 @@ export default function SellerDashboard({ language }) {
     { id: 'desserts', name: language === 'hi' ? 'मिठाई' : 'Desserts' }
   ];
 
-  // Mock products data
+  // Load data from API
   useEffect(() => {
-    setProducts([
-      {
-        id: 1,
-        name: language === 'hi' ? 'मसाला दोसा' : 'Masala Dosa',
-        price: 120,
-        category: 'street-food',
-        image: 'https://placehold.co/300x200/FF6B6B/FFF?text=Masala+Dosa',
-        description: language === 'hi' ? 'क्रिस्पी दोसा मसाला आलू के साथ' : 'Crispy dosa with spiced potato filling',
-        stock: 25,
-        status: 'active'
-      },
-      {
-        id: 2,
-        name: language === 'hi' ? 'चाय' : 'Chai',
-        price: 15,
-        category: 'beverages',
-        image: 'https://placehold.co/300x200/4ECDC4/FFF?text=Chai',
-        description: language === 'hi' ? 'गरम मसाला चाय' : 'Hot spiced tea',
-        stock: 50,
-        status: 'active'
-      },
-      {
-        id: 3,
-        name: language === 'hi' ? 'समोसा' : 'Samosa',
-        price: 20,
-        category: 'snacks',
-        image: 'https://placehold.co/300x200/45B7D1/FFF?text=Samosa',
-        description: language === 'hi' ? 'क्रिस्पी समोसा मसाला आलू के साथ' : 'Crispy samosa with spiced potato',
-        stock: 30,
-        status: 'active'
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [productsData, analyticsData, ordersData] = await Promise.all([
+          apiService.getMyProducts(),
+          apiService.getSupplierAnalytics(),
+          apiService.getSupplierOrders()
+        ]);
+        
+        setProducts(productsData);
+        setAnalytics(analyticsData);
+        setOrders(ordersData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+        // Fallback to mock data if API fails
+        setProducts([
+          {
+            _id: 1,
+            name: language === 'hi' ? 'मसाला दोसा' : 'Masala Dosa',
+            price: 120,
+            category: 'street-food',
+            image: 'https://placehold.co/300x200/FF6B6B/FFF?text=Masala+Dosa',
+            description: language === 'hi' ? 'क्रिस्पी दोसा मसाला आलू के साथ' : 'Crispy dosa with spiced potato filling',
+            stock: 25,
+            status: 'active'
+          },
+          {
+            _id: 2,
+            name: language === 'hi' ? 'चाय' : 'Chai',
+            price: 15,
+            category: 'beverages',
+            image: 'https://placehold.co/300x200/4ECDC4/FFF?text=Chai',
+            description: language === 'hi' ? 'गरम मसाला चाय' : 'Hot spiced tea',
+            stock: 50,
+            status: 'active'
+          },
+          {
+            _id: 3,
+            name: language === 'hi' ? 'समोसा' : 'Samosa',
+            price: 20,
+            category: 'snacks',
+            image: 'https://placehold.co/300x200/45B7D1/FFF?text=Samosa',
+            description: language === 'hi' ? 'क्रिस्पी समोसा मसाला आलू के साथ' : 'Crispy samosa with spiced potato',
+            stock: 30,
+            status: 'active'
+          }
+        ]);
+      } finally {
+        setLoading(false);
       }
-    ]);
-  }, [language]);
+    };
+
+    if (user) {
+      loadData();
+    }
+  }, [user, language]);
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -105,17 +137,29 @@ export default function SellerDashboard({ language }) {
     return matchesSearch && matchesCategory;
   });
 
-  const handleAddProduct = (newProduct) => {
-    setProducts(prev => [...prev, { ...newProduct, id: Date.now() }]);
-    setShowAddModal(false);
+  const handleAddProduct = async (newProduct) => {
+    try {
+      const createdProduct = await apiService.createProduct(newProduct);
+      setProducts(prev => [...prev, createdProduct]);
+      setShowAddModal(false);
+    } catch (error) {
+      console.error('Error creating product:', error);
+      alert('Failed to create product');
+    }
   };
 
-  const handleDeleteProduct = (productId) => {
-    setProducts(prev => prev.filter(p => p.id !== productId));
+  const handleDeleteProduct = async (productId) => {
+    try {
+      await apiService.deleteProduct(productId);
+      setProducts(prev => prev.filter(p => p._id !== productId));
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      alert('Failed to delete product');
+    }
   };
 
-  // Show loading if user data is not loaded yet
-  if (!user) {
+  // Show loading if user data is not loaded yet or data is loading
+  if (!user || loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
@@ -152,6 +196,17 @@ export default function SellerDashboard({ language }) {
 
             {/* User Menu */}
             <div className="flex items-center space-x-4">
+              {/* Analytics Button */}
+              <button 
+                onClick={() => setShowAnalytics(true)}
+                className="flex items-center space-x-2 px-3 py-2 bg-indigo-500 hover:bg-indigo-600 text-white rounded-lg transition-colors"
+              >
+                <BarChart3 className="w-4 h-4" />
+                <span className="text-sm font-medium">
+                  {language === 'hi' ? 'विश्लेषण' : 'Analytics'}
+                </span>
+              </button>
+
               {/* Language Toggle */}
               <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors">
                 <Globe className="w-5 h-5" />
@@ -161,7 +216,7 @@ export default function SellerDashboard({ language }) {
               <button className="p-2 text-gray-600 hover:text-gray-900 transition-colors relative">
                 <Bell className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  3
+                  {orders.filter(o => o.status === 'pending').length}
                 </span>
               </button>
 
@@ -203,7 +258,7 @@ export default function SellerDashboard({ language }) {
                 <p className="text-sm font-medium text-gray-600">
                   {language === 'hi' ? 'कुल उत्पाद' : 'Total Products'}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">{products.length}</p>
+                <p className="text-2xl font-bold text-gray-900">{analytics?.totalProducts || products.length}</p>
               </div>
               <Package className="w-8 h-8 text-indigo-600" />
             </div>
@@ -216,7 +271,7 @@ export default function SellerDashboard({ language }) {
                   {language === 'hi' ? 'सक्रिय उत्पाद' : 'Active Products'}
                 </p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {products.filter(p => p.status === 'active').length}
+                  {analytics?.activeProducts || products.filter(p => p.status === 'active').length}
                 </p>
               </div>
               <TrendingUp className="w-8 h-8 text-green-600" />
@@ -227,9 +282,9 @@ export default function SellerDashboard({ language }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">
-                  {language === 'hi' ? 'कुल बिक्री' : 'Total Sales'}
+                  {language === 'hi' ? 'कुल राजस्व' : 'Total Revenue'}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">₹2,450</p>
+                <p className="text-2xl font-bold text-gray-900">₹{analytics?.totalRevenue || 0}</p>
               </div>
               <DollarSign className="w-8 h-8 text-yellow-600" />
             </div>
@@ -239,9 +294,9 @@ export default function SellerDashboard({ language }) {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">
-                  {language === 'hi' ? 'आज के ऑर्डर' : 'Today\'s Orders'}
+                  {language === 'hi' ? 'इस महीने के ऑर्डर' : 'This Month Orders'}
                 </p>
-                <p className="text-2xl font-bold text-gray-900">12</p>
+                <p className="text-2xl font-bold text-gray-900">{analytics?.thisMonthOrders || 0}</p>
               </div>
               <ShoppingCart className="w-8 h-8 text-blue-600" />
             </div>
@@ -289,7 +344,7 @@ export default function SellerDashboard({ language }) {
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map(product => (
-            <div key={product.id} className="bg-white/80 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+            <div key={product._id} className="bg-white/80 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
               <div className="relative">
                 <img 
                   src={product.image} 
@@ -301,7 +356,7 @@ export default function SellerDashboard({ language }) {
                     <Edit className="w-4 h-4 text-gray-600" />
                   </button>
                   <button 
-                    onClick={() => handleDeleteProduct(product.id)}
+                    onClick={() => handleDeleteProduct(product._id)}
                     className="p-1 bg-white/80 rounded-full hover:bg-red-100 transition-colors"
                   >
                     <Trash2 className="w-4 h-4 text-red-600" />
@@ -362,6 +417,16 @@ export default function SellerDashboard({ language }) {
         <AddProductModal 
           onClose={() => setShowAddModal(false)}
           onAdd={handleAddProduct}
+          language={language}
+        />
+      )}
+
+      {/* Analytics Modal */}
+      {showAnalytics && (
+        <AnalyticsModal 
+          analytics={analytics}
+          orders={orders}
+          onClose={() => setShowAnalytics(false)}
           language={language}
         />
       )}
@@ -505,6 +570,178 @@ function AddProductModal({ onClose, onAdd, language }) {
             {language === 'hi' ? 'उत्पाद जोड़ें' : 'Add Product'}
           </button>
         </form>
+      </div>
+    </div>
+  );
+}
+
+// Analytics Modal Component
+function AnalyticsModal({ analytics, orders, onClose, language }) {
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      case 'confirmed': return 'bg-blue-100 text-blue-800';
+      case 'preparing': return 'bg-orange-100 text-orange-800';
+      case 'shipped': return 'bg-purple-100 text-purple-800';
+      case 'delivered': return 'bg-green-100 text-green-800';
+      case 'cancelled': return 'bg-red-100 text-red-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  const getStatusText = (status) => {
+    switch (status) {
+      case 'pending': return language === 'hi' ? 'लंबित' : 'Pending';
+      case 'confirmed': return language === 'hi' ? 'पुष्टि' : 'Confirmed';
+      case 'preparing': return language === 'hi' ? 'तैयारी' : 'Preparing';
+      case 'shipped': return language === 'hi' ? 'भेजा गया' : 'Shipped';
+      case 'delivered': return language === 'hi' ? 'पहुंचाया' : 'Delivered';
+      case 'cancelled': return language === 'hi' ? 'रद्द' : 'Cancelled';
+      default: return status;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto relative">
+        <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white rounded-t-2xl sticky top-0">
+          <button
+            onClick={onClose}
+            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
+          >
+            ×
+          </button>
+          <h2 className="text-2xl font-bold text-center">
+            {language === 'hi' ? 'विश्लेषण डैशबोर्ड' : 'Analytics Dashboard'}
+          </h2>
+        </div>
+
+        <div className="p-6">
+          {/* Key Metrics */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-xl p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Total Revenue</p>
+                  <p className="text-2xl font-bold">₹{analytics?.totalRevenue || 0}</p>
+                </div>
+                <DollarSign className="w-8 h-8 opacity-80" />
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-green-500 to-green-600 text-white rounded-xl p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Total Orders</p>
+                  <p className="text-2xl font-bold">{analytics?.totalOrders || 0}</p>
+                </div>
+                <ShoppingCart className="w-8 h-8 opacity-80" />
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-xl p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Active Products</p>
+                  <p className="text-2xl font-bold">{analytics?.activeProducts || 0}</p>
+                </div>
+                <Package className="w-8 h-8 opacity-80" />
+              </div>
+            </div>
+
+            <div className="bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">This Month</p>
+                  <p className="text-2xl font-bold">₹{analytics?.thisMonthRevenue || 0}</p>
+                </div>
+                <Calendar className="w-8 h-8 opacity-80" />
+              </div>
+            </div>
+          </div>
+
+          {/* Recent Orders */}
+          <div className="mb-8">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              {language === 'hi' ? 'हाल के ऑर्डर' : 'Recent Orders'}
+            </h3>
+            <div className="bg-white/80 backdrop-blur-sm rounded-xl border border-white/20 shadow-lg overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {language === 'hi' ? 'ऑर्डर' : 'Order'}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {language === 'hi' ? 'ग्राहक' : 'Customer'}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {language === 'hi' ? 'राशि' : 'Amount'}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {language === 'hi' ? 'स्थिति' : 'Status'}
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        {language === 'hi' ? 'तारीख' : 'Date'}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {orders.slice(0, 10).map((order) => (
+                      <tr key={order._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          #{order._id.slice(-6)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.vendor?.name || 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          ₹{order.totalAmount}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(order.status)}`}>
+                            {getStatusText(order.status)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          {/* Top Products */}
+          {analytics?.topProducts && analytics.topProducts.length > 0 && (
+            <div>
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                {language === 'hi' ? 'शीर्ष बिकने वाले उत्पाद' : 'Top Selling Products'}
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {analytics.topProducts.map((product, index) => (
+                  <div key={product._id} className="bg-white/80 backdrop-blur-sm rounded-xl p-4 border border-white/20 shadow-lg">
+                    <div className="flex items-center justify-between mb-2">
+                      <h4 className="font-semibold text-gray-900">{product.name}</h4>
+                      <span className="text-sm text-gray-500">#{index + 1}</span>
+                    </div>
+                    <div className="space-y-1">
+                      <p className="text-sm text-gray-600">
+                        {language === 'hi' ? 'बिके:' : 'Sold:'} {product.totalSold}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {language === 'hi' ? 'राजस्व:' : 'Revenue:'} ₹{product.totalRevenue}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

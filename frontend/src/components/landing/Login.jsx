@@ -111,7 +111,7 @@ export default function Login({ onClose, language }) {
         localStorage.setItem('user', JSON.stringify(user));
         localStorage.setItem('token', token);
         
-                // Close the modal first
+        // Close the modal first
         onClose();
         
         // Navigate based on user role from database
