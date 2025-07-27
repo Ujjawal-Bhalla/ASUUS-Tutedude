@@ -99,8 +99,8 @@ export default function SignupSupplier({ onClose, language }) {
     try {
       // Try to register with real database
       // Check if API URL is configured
-      const apiUrl = import.meta.env.VITE_API_URL;
-      if (!apiUrl) {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://asuus-tutedude-production.up.railway.app';
+      if (!apiUrl || apiUrl === 'undefined') {
         throw new Error('API URL not configured. Please set VITE_API_URL environment variable.');
       }
       

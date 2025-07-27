@@ -70,8 +70,12 @@ export default function Login({ onClose, language }) {
     
     try {
       // Check if API URL is configured
-      const apiUrl = import.meta.env.VITE_API_URL;
-      if (!apiUrl) {
+      const apiUrl = import.meta.env.VITE_API_URL || 'https://asuus-tutedude-production.up.railway.app';
+      console.log('Environment variables:', import.meta.env);
+      console.log('VITE_API_URL:', apiUrl);
+      console.log('Type of VITE_API_URL:', typeof apiUrl);
+      
+      if (!apiUrl || apiUrl === 'undefined') {
         throw new Error('API URL not configured. Please set VITE_API_URL environment variable.');
       }
       
