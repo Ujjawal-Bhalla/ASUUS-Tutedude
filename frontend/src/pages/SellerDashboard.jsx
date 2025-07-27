@@ -139,7 +139,7 @@ export default function SellerDashboard({ language }) {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {language === 'hi' ? 'वेंटरेस्ट वेंडर डैशबोर्ड' : 'Ventrest Vendor Dashboard'}
+                  {language === 'hi' ? 'वेंटरेस्ट सप्लायर डैशबोर्ड' : 'Ventrest Supplier Dashboard'}
                 </h1>
                 <p className="text-sm text-gray-600">
                   {language === 'hi' ? 'अपने उत्पादों का प्रबंधन करें' : 'Manage your products'}
@@ -530,7 +530,7 @@ function ProfileSidebar({ user, onClose, language }) {
             <h3 className="text-xl font-semibold text-gray-900">{user.name}</h3>
             <p className="text-gray-600">{user.email}</p>
             <span className="inline-block px-3 py-1 bg-indigo-100 text-indigo-800 rounded-full text-sm font-medium mt-2">
-              {language === 'hi' ? 'विक्रेता' : 'Vendor'}
+              {language === 'hi' ? 'सप्लायर' : 'Supplier'}
             </span>
           </div>
 

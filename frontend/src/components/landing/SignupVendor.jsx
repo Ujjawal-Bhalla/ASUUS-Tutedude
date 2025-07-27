@@ -15,6 +15,26 @@ export default function SignupVendor({ onClose, language }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // Handle keyboard events
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -65,52 +85,69 @@ export default function SignupVendor({ onClose, language }) {
     if (!validateForm()) return;
 
     setIsLoading(true);
+    
     try {
-      const response = await fetch('https://asuus-tutedude-production.up.railway.app/api/auth/register', {
+      // Try to register with real database
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           ...formData,
-          role: 'buyer' // Vendor role is 'buyer' in our system
+          role: 'vendor'
         }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        // Show success message and redirect to login
-        alert(language === 'hi' 
-          ? 'पंजीकरण सफल! कृपया लॉगिन करें।' 
-          : 'Registration successful! Please login.'
-        );
-        onClose(); // Close signup modal
-        // The parent component should handle showing login modal
+        // Real registration successful
+        setErrors(prev => ({ 
+          ...prev, 
+          success: language === 'hi' 
+            ? 'पंजीकरण सफल! कृपया लॉगिन करें।' 
+            : 'Registration successful! Please login.'
+        }));
+        setTimeout(() => {
+          onClose();
+        }, 2000);
       } else {
         setErrors(prev => ({ ...prev, general: data.message }));
       }
     } catch (error) {
-      console.error('Registration error:', error);
-      // For demo purposes, simulate success
-      alert(language === 'hi' 
-        ? 'पंजीकरण सफल! कृपया लॉगिन करें।' 
-        : 'Registration successful! Please login.'
-      );
-      onClose(); // Close signup modal
+      console.log('Backend not available, using hackathon mode');
+      
+      // Fallback to hackathon registration
+      setErrors(prev => ({ 
+        ...prev, 
+        success: language === 'hi' 
+          ? 'पंजीकरण सफल! कृपया लॉगिन करें।' 
+          : 'Registration successful! Please login.'
+      }));
+      setTimeout(() => {
+        onClose();
+      }, 2000);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] relative overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white">
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[95vh] relative overflow-hidden flex flex-col">
+        {/* Header - Fixed */}
+        <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 text-white flex-shrink-0">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
+            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors z-10"
           >
             <X className="w-6 h-6" />
           </button>
@@ -122,8 +159,8 @@ export default function SignupVendor({ onClose, language }) {
           </p>
         </div>
 
-        {/* Form */}
-        <div className="p-6 overflow-y-auto flex-1">
+        {/* Form - Scrollable */}
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name */}
             <div>
@@ -247,6 +284,12 @@ export default function SignupVendor({ onClose, language }) {
             {errors.general && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                 <p className="text-red-600 text-sm text-center">{errors.general}</p>
+              </div>
+            )}
+
+            {errors.success && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-green-600 text-sm text-center">{errors.success}</p>
               </div>
             )}
 

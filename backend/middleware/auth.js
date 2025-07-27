@@ -18,7 +18,10 @@ const protect = async (req, res, next) => {
     }
 
     // Verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET environment variable is required');
+    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     
     // Get user from token
     const user = await User.findById(decoded.userId).select('-password');
@@ -50,32 +53,32 @@ const protect = async (req, res, next) => {
   }
 };
 
-// Middleware to check if user is seller
-const isSeller = (req, res, next) => {
-  if (req.user && req.user.role === 'seller') {
+// Middleware to check if user is supplier
+const isSupplier = (req, res, next) => {
+  if (req.user && req.user.role === 'supplier') {
     next();
   } else {
     res.status(403).json({
       success: false,
-      message: 'Access denied. Seller role required.'
+      message: 'Access denied. Supplier role required.'
     });
   }
 };
 
-// Middleware to check if user is buyer
-const isBuyer = (req, res, next) => {
-  if (req.user && req.user.role === 'buyer') {
+// Middleware to check if user is vendor
+const isVendor = (req, res, next) => {
+  if (req.user && req.user.role === 'vendor') {
     next();
   } else {
     res.status(403).json({
       success: false,
-      message: 'Access denied. Buyer role required.'
+      message: 'Access denied. Vendor role required.'
     });
   }
 };
 
 module.exports = {
   protect,
-  isSeller,
-  isBuyer
+  isSupplier,
+  isVendor
 }; 

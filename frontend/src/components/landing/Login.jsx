@@ -13,6 +13,26 @@ export default function Login({ onClose, language }) {
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState({});
 
+  // Handle keyboard events
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, []);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
@@ -47,41 +67,11 @@ export default function Login({ onClose, language }) {
     if (!validateForm()) return;
 
     setIsLoading(true);
+    
     try {
-      // Check if using demo credentials
-      const isDemoEmail = formData.email.includes('demo.com');
-      
-      if (isDemoEmail) {
-        // Use demo logic for demo credentials
-        let userRole = 'buyer'; // default
-        
-        // Demo logic: if email contains 'vendor' or 'seller', redirect to seller dashboard
-        if (formData.email.toLowerCase().includes('vendor') || formData.email.toLowerCase().includes('seller')) {
-          userRole = 'seller';
-        }
-        
-        // Simulate successful login
-        const mockUser = {
-          name: userRole === 'seller' ? 'Ventrest Vendor' : 'Ventrest Buyer',
-          email: formData.email,
-          role: userRole,
-          profilePic: userRole === 'seller' 
-            ? 'https://placehold.co/100x100/4F46E5/FFF?text=VV' 
-            : 'https://placehold.co/100x100/4F46E5/FFF?text=VB'
-        };
-        
-        // Store user data
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        localStorage.setItem('token', 'mock-token-' + Date.now());
-        
-        // Force a page reload to update the user state
-        window.location.href = userRole === 'buyer' ? '/#/buyer-dashboard' : '/#/seller-dashboard';
-        return;
-      }
-      
-      // Try to connect to backend for real credentials
+      // First, try to authenticate with real database
       try {
-        const response = await fetch('https://asuus-tutedude-production.up.railway.app/api/auth/login', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -92,48 +82,48 @@ export default function Login({ onClose, language }) {
         const data = await response.json();
 
         if (data.success) {
-          // Store user data from database
+          // Real user from database
           localStorage.setItem('user', JSON.stringify(data.data.user));
           localStorage.setItem('token', data.data.token);
           
-          // Debug: Log the user role
-          console.log('User role from backend:', data.data.user.role);
-          console.log('Redirecting to:', data.data.user.role === 'buyer' ? '/#/buyer-dashboard' : '/#/seller-dashboard');
-          
-          // Force a page reload to update the user state
-          window.location.href = data.data.user.role === 'buyer' ? '/#/buyer-dashboard' : '/#/seller-dashboard';
+          // Navigate based on real user role
+          window.location.href = data.data.user.role === 'vendor' ? '/#/vendor-dashboard' : '/#/supplier-dashboard';
           return;
         } else {
+          // Database authentication failed
           setErrors(prev => ({ ...prev, general: data.message }));
           return;
         }
       } catch (backendError) {
-        console.error('Backend connection failed:', backendError);
-        // Fallback to demo logic if backend is not available
-        let userRole = 'buyer'; // default
+        console.log('Backend not available, using hackathon mode');
         
-        if (formData.email.toLowerCase().includes('vendor') || formData.email.toLowerCase().includes('seller')) {
-          userRole = 'seller';
+        // Fallback to hackathon logic
+        let userRole = 'vendor'; // default
+        
+        // If email contains 'supplier', they're a supplier
+        if (formData.email.toLowerCase().includes('supplier')) {
+          userRole = 'supplier';
         }
         
-        const mockUser = {
-          name: userRole === 'seller' ? 'Ventrest Vendor' : 'Ventrest Buyer',
+        // Create hackathon user object
+        const user = {
+          name: userRole === 'supplier' ? 'Ventrest Supplier' : 'Ventrest Vendor',
           email: formData.email,
           role: userRole,
-          profilePic: userRole === 'seller' 
-            ? 'https://placehold.co/100x100/4F46E5/FFF?text=VV' 
-            : 'https://placehold.co/100x100/4F46E5/FFF?text=VB'
+          profilePic: userRole === 'supplier' 
+            ? 'https://placehold.co/100x100/4F46E5/FFF?text=VS' 
+            : 'https://placehold.co/100x100/4F46E5/FFF?text=VV'
         };
         
-        localStorage.setItem('user', JSON.stringify(mockUser));
-        localStorage.setItem('token', 'mock-token-' + Date.now());
+        // Store hackathon user data
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('token', 'hackathon-token-' + Date.now());
         
-        // Force a page reload to update the user state
-        window.location.href = userRole === 'buyer' ? '/#/buyer-dashboard' : '/#/seller-dashboard';
+        // Navigate based on role
+        window.location.href = userRole === 'vendor' ? '/#/vendor-dashboard' : '/#/supplier-dashboard';
       }
       
     } catch (error) {
-      console.error('Login error:', error);
       setErrors(prev => ({ 
         ...prev, 
         general: language === 'hi' 
@@ -146,13 +136,20 @@ export default function Login({ onClose, language }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md relative overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-6 text-white">
+    <div 
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md max-h-[90vh] relative overflow-hidden flex flex-col">
+        {/* Header - Fixed */}
+        <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-6 text-white flex-shrink-0">
           <button
             onClick={onClose}
-            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
+            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors z-10"
           >
             <X className="w-6 h-6" />
           </button>
@@ -164,8 +161,8 @@ export default function Login({ onClose, language }) {
           </p>
         </div>
 
-        {/* Form */}
-        <div className="p-6">
+        {/* Form - Scrollable */}
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 min-h-0">
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
@@ -231,12 +228,12 @@ export default function Login({ onClose, language }) {
               {isLoading ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  {language === 'hi' ? 'लॉगिन कर रहे हैं...' : 'Logging in...'}
+                  <span className="ml-2">{language === 'hi' ? 'लॉगिन कर रहे हैं...' : 'Logging in...'}</span>
                 </>
               ) : (
                 <>
                   <LogIn className="w-5 h-5" />
-                  {language === 'hi' ? 'लॉगिन करें' : 'Login'}
+                  <span className="ml-2">{language === 'hi' ? 'लॉगिन करें' : 'Login'}</span>
                 </>
               )}
             </button>
@@ -244,18 +241,23 @@ export default function Login({ onClose, language }) {
             {/* Demo Credentials */}
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-4">
               <h4 className="text-sm font-semibold text-blue-800 mb-2">
-                {language === 'hi' ? 'डेमो क्रेडेंशियल्स' : 'Demo Credentials'}
+                {language === 'hi' ? 'हैकाथॉन लॉगिन' : 'Hackathon Login'}
               </h4>
               <div className="text-xs text-blue-700 space-y-1">
-                <p><strong>Vendor/Supplier:</strong> vendor@demo.com / password123</p>
-                <p><strong>Buyer:</strong> buyer@demo.com / password123</p>
+                <p><strong>Vendor:</strong> any-email@any.com (password: anything)</p>
+                <p><strong>Supplier:</strong> supplier@any.com (password: anything)</p>
                 <p className="text-blue-600 mt-2">
                   <strong>Tip:</strong> {language === 'hi' 
-                    ? 'वेंडर या सेलर के लिए ईमेल में "vendor" या "seller" शब्द जोड़ें'
-                    : 'Add "vendor" or "seller" in email for vendor/supplier access'
+                    ? 'ईमेल में "supplier" शब्द जोड़ें सप्लायर के लिए'
+                    : 'Add "supplier" in email for supplier access'
                   }
                 </p>
               </div>
+            </div>
+
+            {/* Keyboard Shortcuts */}
+            <div className="text-xs text-gray-500 text-center mt-4">
+              <p>Press <kbd className="px-1 py-0.5 bg-gray-200 rounded text-xs">Esc</kbd> to close</p>
             </div>
           </form>
         </div>

@@ -14,10 +14,8 @@ export default function App() {
   const [language, setLanguage] = useState('en');
   const [user, setUser] = useState(null);
 
-  console.log('App component loaded');
 
   useEffect(() => {
-    console.log('App useEffect running');
     const savedUser = localStorage.getItem('user');
     if (savedUser) {
       try {
@@ -42,7 +40,6 @@ export default function App() {
             path="/" 
             element={
               <>
-                {console.log('Rendering Landing Page')}
                 <Header language={language} toggleLanguage={toggleLanguage} />
                 <Landing onOpen={openModal} language={language} />
               </>
@@ -51,19 +48,17 @@ export default function App() {
 
           {/* Dashboard Routes - Simplified */}
           <Route 
-            path="/seller-dashboard" 
+            path="/supplier-dashboard" 
             element={
               <>
-                {console.log('Rendering Seller Dashboard')}
                 <SellerDashboard language={language} />
               </>
             } 
           />
           <Route 
-            path="/buyer-dashboard" 
+            path="/vendor-dashboard" 
             element={
               <>
-                {console.log('Rendering Buyer Dashboard')}
                 <BuyerDashboard language={language} />
               </>
             } 

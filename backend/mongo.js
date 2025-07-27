@@ -2,15 +2,48 @@ const mongoose = require('mongoose');
 
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/gcommerce', {
+    // Check if MONGODB_URI is provided
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI environment variable is required for production');
+    }
+
+    const conn = await mongoose.connect(process.env.MONGODB_URI, {
+      // Connection options for better reliability
+      maxPoolSize: 10,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
+      bufferMaxEntries: 0,
+      // Use new URL parser and unified topology
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
     
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    
+    // Handle connection events
+    mongoose.connection.on('error', (err) => {
+      console.error('MongoDB connection error:', err);
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+      console.log('MongoDB disconnected');
+    });
+    
+    // Graceful shutdown
+    process.on('SIGINT', async () => {
+      await mongoose.connection.close();
+      console.log('MongoDB connection closed through app termination');
+      process.exit(0);
+    });
+    
   } catch (error) {
     console.error('MongoDB connection error:', error);
-    process.exit(1);
+    // Don't exit immediately in production, let the app handle it
+    if (process.env.NODE_ENV === 'development') {
+      process.exit(1);
+    }
+    throw error;
   }
 };
 

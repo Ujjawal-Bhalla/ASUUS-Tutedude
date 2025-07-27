@@ -20,7 +20,7 @@ import {
 export default function BuyerDashboard({ language }) {
   const navigate = useNavigate();
   
-  console.log('BuyerDashboard component loaded');
+
   
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState([]);
@@ -180,7 +180,7 @@ export default function BuyerDashboard({ language }) {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">
-                  {language === 'hi' ? 'वेंटरेस्ट बायर पोर्टल' : 'Ventrest Buyer Portal'}
+                  {language === 'hi' ? 'वेंटरेस्ट वेंडर पोर्टल' : 'Ventrest Vendor Portal'}
                 </h1>
                 <p className="text-sm text-gray-600">
                   {language === 'hi' ? 'सर्वोत्तम स्ट्रीट फूड खोजें' : 'Discover the best street food'}
