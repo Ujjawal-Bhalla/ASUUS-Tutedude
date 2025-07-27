@@ -11,11 +11,32 @@ const app = express();
 // Connect to MongoDB with error handling
 const initializeServer = async () => {
   try {
+    // Debug environment variables
+    console.log('=== Railway Environment Debug ===');
+    console.log('NODE_ENV:', process.env.NODE_ENV);
+    console.log('PORT:', process.env.PORT);
+    console.log('MONGODB_URI:', process.env.MONGODB_URI ? 'Set' : 'NOT SET');
+    console.log('JWT_SECRET:', process.env.JWT_SECRET ? 'Set' : 'NOT SET');
+    
+    if (process.env.MONGODB_URI) {
+      const uri = process.env.MONGODB_URI;
+      console.log('MongoDB URI length:', uri.length);
+      console.log('Contains username:', uri.includes('ventrest-user'));
+      console.log('Contains database:', uri.includes('/ventrest'));
+    }
+    
     await connectDB();
     
     // Server startup moved to initializeServer function
   } catch (error) {
     console.error('Failed to initialize server:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      code: error.code,
+      codeName: error.codeName
+    });
+    
     // In production, keep the server running even if MongoDB fails
     if (process.env.NODE_ENV === 'development') {
       process.exit(1);
