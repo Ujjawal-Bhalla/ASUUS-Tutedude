@@ -14,6 +14,15 @@ class ApiService {
     };
   }
 
+  // Token management methods
+  setToken(token) {
+    localStorage.setItem('token', token);
+  }
+
+  clearToken() {
+    localStorage.removeItem('token');
+  }
+
   // Auth API calls
   async login(email, password) {
     const response = await fetch(`${this.baseURL}/auth/login`, {
