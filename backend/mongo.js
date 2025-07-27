@@ -13,10 +13,10 @@ const connectDB = async () => {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
       bufferCommands: false,
-      bufferMaxEntries: 0,
-      // Use new URL parser and unified topology
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
+      // Removed deprecated options
+      // bufferMaxEntries: 0, // DEPRECATED
+      // useNewUrlParser: true, // DEPRECATED
+      // useUnifiedTopology: true, // DEPRECATED
     });
     
     console.log(`MongoDB Connected: ${conn.connection.host}`);
