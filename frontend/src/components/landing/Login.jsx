@@ -69,58 +69,46 @@ export default function Login({ onClose, language }) {
     setIsLoading(true);
     
     try {
-      // First, try to authenticate with real database
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        });
+      // Try to authenticate with database
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-        const data = await response.json();
+      const data = await response.json();
 
-        if (data.success) {
-          // Real user from database
-          localStorage.setItem('user', JSON.stringify(data.data.user));
-          localStorage.setItem('token', data.data.token);
-          
-          // Navigate based on real user role
-          window.location.href = data.data.user.role === 'vendor' ? '/#/vendor-dashboard' : '/#/supplier-dashboard';
-          return;
-        } else {
-          // Database authentication failed
-          setErrors(prev => ({ ...prev, general: data.message }));
-          return;
-        }
-      } catch (backendError) {
-        console.log('Backend not available, using hackathon mode');
+      if (data.success) {
+        // User authenticated successfully
+        const user = data.data.user;
+        const token = data.data.token;
         
-        // Fallback to hackathon logic
-        let userRole = 'vendor'; // default
+        console.log('User authenticated:', user);
+        console.log('User role:', user.role);
         
-        // If email contains 'supplier', they're a supplier
-        if (formData.email.toLowerCase().includes('supplier')) {
-          userRole = 'supplier';
-        }
-        
-        // Create hackathon user object
-        const user = {
-          name: userRole === 'supplier' ? 'Ventrest Supplier' : 'Ventrest Vendor',
-          email: formData.email,
-          role: userRole,
-          profilePic: userRole === 'supplier' 
-            ? 'https://placehold.co/100x100/4F46E5/FFF?text=VS' 
-            : 'https://placehold.co/100x100/4F46E5/FFF?text=VV'
-        };
-        
-        // Store hackathon user data
+        // Store user data
         localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', 'hackathon-token-' + Date.now());
+        localStorage.setItem('token', token);
         
-        // Navigate based on role
-        window.location.href = userRole === 'vendor' ? '/#/vendor-dashboard' : '/#/supplier-dashboard';
+        // Navigate based on user role from database
+        if (user.role === 'vendor') {
+          window.location.href = '/#/vendor-dashboard';
+        } else if (user.role === 'supplier') {
+          window.location.href = '/#/supplier-dashboard';
+        } else {
+          console.error('Unknown user role:', user.role);
+          setErrors(prev => ({ 
+            ...prev, 
+            general: language === 'hi' 
+              ? 'अज्ञात उपयोगकर्ता भूमिका' 
+              : 'Unknown user role'
+          }));
+        }
+      } else {
+        // Authentication failed
+        setErrors(prev => ({ ...prev, general: data.message }));
       }
       
     } catch (error) {

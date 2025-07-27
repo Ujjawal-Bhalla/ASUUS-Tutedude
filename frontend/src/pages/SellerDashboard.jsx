@@ -126,6 +126,9 @@ export default function SellerDashboard({ language }) {
     );
   }
 
+  // Optional: Log user role for debugging
+  console.log('Supplier dashboard - User role:', user.role);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       {/* Header */}

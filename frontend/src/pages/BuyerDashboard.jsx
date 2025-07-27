@@ -167,6 +167,9 @@ export default function BuyerDashboard({ language }) {
     );
   }
 
+  // Optional: Log user role for debugging
+  console.log('Vendor dashboard - User role:', user.role);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100">
       {/* Header */}
