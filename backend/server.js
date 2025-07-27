@@ -26,8 +26,13 @@ const initializeServer = async () => {
     }
     
     await connectDB();
+    console.log('✅ MongoDB connected successfully');
     
-    // Server startup moved to initializeServer function
+    // Start server after successful MongoDB connection
+    app.listen(PORT, "0.0.0.0", () => {
+      console.log(`✅ Server running on port ${PORT}`);
+    });
+    
   } catch (error) {
     console.error('Failed to initialize server:', error);
     console.error('Error details:', {
@@ -44,7 +49,7 @@ const initializeServer = async () => {
     
     // Start server without MongoDB in production
     app.listen(PORT, "0.0.0.0", () => {
-      console.log(`Server running on port ${PORT} (MongoDB connection failed)`);
+      console.log(`⚠️ Server running on port ${PORT} (MongoDB connection failed)`);
     });
   }
 };
@@ -83,6 +88,4 @@ app.get('/test-mongo', async (req, res) => {
   }
 });
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
-});
+// Server startup is now handled in initializeServer()
