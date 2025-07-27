@@ -14,6 +14,10 @@ const generateToken = (userId) => {
 // Register User
 const register = async (req, res) => {
   try {
+    console.log('=== Register Request Debug ===');
+    console.log('Request body:', req.body);
+    console.log('Request headers:', req.headers);
+    
     const { name, email, password, role, phone, address } = req.body;
 
     // Check if user already exists
@@ -50,7 +54,16 @@ const register = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Registration error:', error);
+    console.error('=== Registration Error Debug ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      name: error.name,
+      code: error.code,
+      codeName: error.codeName
+    });
+    
     res.status(500).json({
       success: false,
       message: 'Registration failed',
@@ -62,10 +75,15 @@ const register = async (req, res) => {
 // Login User
 const login = async (req, res) => {
   try {
+    console.log('=== Login Request Debug ===');
+    console.log('Request body:', req.body);
+    console.log('Request headers:', req.headers);
+    
     const { email, password } = req.body;
 
     // Validate input
     if (!email || !password) {
+      console.log('Missing email or password');
       return res.status(400).json({
         success: false,
         message: 'Email and password are required'
@@ -126,7 +144,16 @@ const login = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('=== Login Error Debug ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      name: error.name,
+      code: error.code,
+      codeName: error.codeName
+    });
+    
     res.status(500).json({
       success: false,
       message: 'Login failed',
