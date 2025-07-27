@@ -1,5 +1,5 @@
 // src/components/landing/SignupVendor.jsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { UserPlus, Mail, Lock, User, Phone, X, Loader2, Eye, EyeOff } from 'lucide-react';
 
 export default function SignupVendor({ onClose, language }) {
