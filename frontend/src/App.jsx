@@ -10,6 +10,8 @@ import SignupSupplier from './components/landing/SignupSupplier';
 import Login from './components/landing/Login';
 
 export default function App() {
+  console.log('App component rendering');
+  
   const [modal, setModal] = useState(null);
   const [language, setLanguage] = useState('en');
   const [user, setUser] = useState(null);
