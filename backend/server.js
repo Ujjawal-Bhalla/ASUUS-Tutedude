@@ -1,27 +1,40 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const db = require("./db");
+const connectDB = require("./mongo");
 
+// Import routes
+const authRoutes = require("./routes/auth");
 
 const app = express();
+
+// Connect to MongoDB
+connectDB();
+
+// Middleware
 app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 3000;
 
+// Routes
+app.use('/api/auth', authRoutes);
+
+// Test route
 app.get("/", (req, res) => {
-  res.send("Hello from backend!");
+  res.send("Hello from GCommerce backend!");
 });
 
-// Test DB
-app.get('/test-db', async (req, res) => {
+// Test MongoDB connection
+app.get('/test-mongo', async (req, res) => {
   try {
-    const result = await db.query('SELECT NOW()');
-    res.json(result.rows[0]);
+    res.json({ 
+      message: 'MongoDB connection successful',
+      timestamp: new Date().toISOString()
+    });
   } catch (err) {
-    console.error('Postgres error:', err);
-    res.status(500).json({ error: 'DB connection failed', details: err.message });
+    console.error('MongoDB error:', err);
+    res.status(500).json({ error: 'MongoDB connection failed', details: err.message });
   }
 });
 

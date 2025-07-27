@@ -2,12 +2,12 @@
 import React, { useState } from 'react';
 import Header from './components/landing/Header';
 import Landing from './pages/Landing';
-import SignupBuyer from './components/landing/SignupBuyer';
-import SignupSeller from './components/landing/SignupSeller';
+import SignupVendor from './components/landing/SignupVendor';
+import SignupSupplier from './components/landing/SignupSupplier';
 import Login from './components/landing/Login';
 
 export default function App() {
-  const [modal, setModal] = useState(null); // 'buyer' | 'seller' | 'login' | null
+  const [modal, setModal] = useState(null); // 'vendor' | 'supplier' | 'login' | null
   const [language, setLanguage] = useState('en'); // 'en' | 'hi'
 
   const openModal = (type) => setModal(type);
@@ -19,8 +19,8 @@ export default function App() {
       <Header language={language} toggleLanguage={toggleLanguage} />
       <Landing onOpen={openModal} language={language} />
 
-      {modal === 'buyer' && <SignupBuyer onClose={closeModal} language={language} />}
-      {modal === 'seller' && <SignupSeller onClose={closeModal} language={language} />}
+      {modal === 'vendor' && <SignupVendor onClose={closeModal} language={language} />}
+      {modal === 'supplier' && <SignupSupplier onClose={closeModal} language={language} />}
       {modal === 'login' && <Login onClose={closeModal} language={language} />}
     </div>
   );
