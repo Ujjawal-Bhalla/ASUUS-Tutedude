@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, X, Loader2, LogIn, Eye, EyeOff } from 'lucide-react';
 
-export default function Login({ onClose, language }) {
+export default function Login({ onClose, language, onLogin }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -68,25 +68,13 @@ export default function Login({ onClose, language }) {
 
     setIsLoading(true);
     
-    // Debug: Show all environment variables
-    console.log('=== Environment Variables Debug ===');
-    console.log('All env vars:', import.meta.env);
-    console.log('VITE_API_URL:', import.meta.env.VITE_API_URL);
-    console.log('VITE_API_URL type:', typeof import.meta.env.VITE_API_URL);
-    console.log('VITE_API_URL length:', import.meta.env.VITE_API_URL?.length);
-    
     try {
       // Check if API URL is configured
       const apiUrl = import.meta.env.VITE_API_URL || 'https://asuus-tutedude-production.up.railway.app';
-      console.log('Environment variables:', import.meta.env);
-      console.log('VITE_API_URL:', apiUrl);
-      console.log('Type of VITE_API_URL:', typeof apiUrl);
       
       if (!apiUrl || apiUrl === 'undefined') {
         throw new Error('API URL not configured. Please set VITE_API_URL environment variable.');
       }
-      
-      console.log('Making API call to:', `${apiUrl}/api/auth/login`);
       
       // Try to authenticate with database
       const response = await fetch(`${apiUrl}/api/auth/login`, {
@@ -107,33 +95,27 @@ export default function Login({ onClose, language }) {
         console.log('User authenticated:', user);
         console.log('User role:', user.role);
         
-        // Store user data
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', token);
-        
-        // Close the modal first
-        onClose();
-        
-        // Navigate based on user role from database
-        if (user.role === 'vendor') {
-          window.location.href = '/#/vendor-dashboard';
-        } else if (user.role === 'supplier') {
-          window.location.href = '/#/supplier-dashboard';
+        // Use the onLogin callback from App.jsx
+        if (onLogin) {
+          onLogin(user, token);
         } else {
-          console.error('Unknown user role:', user.role);
-          setErrors(prev => ({
-            ...prev,
-            general: language === 'hi'
-              ? 'अज्ञात उपयोगकर्ता भूमिका'
-              : 'Unknown user role'
-          }));
+          // Fallback to localStorage and navigation
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('token', token);
+          
+          // Navigate based on user role
+          if (user.role === 'vendor') {
+            navigate('/vendor-dashboard');
+          } else if (user.role === 'supplier') {
+            navigate('/supplier-dashboard');
+          }
         }
       } else {
         // Authentication failed
         setErrors(prev => ({ ...prev, general: data.message }));
       }
       
-        } catch (error) {
+    } catch (error) {
       console.error('Login error:', error);
       setErrors(prev => ({
         ...prev,

@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Store, Mail, Lock, User, Phone, Building, X, Loader2, Eye, EyeOff } from 'lucide-react';
 
-export default function SignupSupplier({ onClose, language }) {
+export default function SignupSupplier({ onClose, language, onLogin }) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -120,16 +120,18 @@ export default function SignupSupplier({ onClose, language }) {
       const data = await response.json();
 
       if (data.success) {
-        // Real registration successful
-        setErrors(prev => ({ 
-          ...prev, 
-          success: language === 'hi' 
-            ? 'पंजीकरण सफल! कृपया लॉगिन करें।' 
-            : 'Registration successful! Please login.'
-        }));
-        setTimeout(() => {
-          onClose();
-        }, 2000);
+        // Real registration successful - auto login
+        const user = data.data.user;
+        const token = data.data.token;
+        
+        if (onLogin) {
+          onLogin(user, token);
+        } else {
+          // Fallback to localStorage and navigation
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('token', token);
+          window.location.href = '/#/supplier-dashboard';
+        }
       } else {
         setErrors(prev => ({ ...prev, general: data.message }));
       }
