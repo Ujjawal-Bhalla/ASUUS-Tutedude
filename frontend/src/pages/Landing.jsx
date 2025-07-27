@@ -5,10 +5,7 @@ import SignupVendor from '../components/landing/SignupVendor';
 import SignupSupplier from '../components/landing/SignupSupplier';
 import Login from '../components/landing/Login';
 
-export default function Landing({ language }) {
-  const [showVendorSignup, setShowVendorSignup] = useState(false);
-  const [showSupplierSignup, setShowSupplierSignup] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
+export default function Landing({ onOpen, language }) {
 
   const features = [
     {
@@ -73,7 +70,7 @@ export default function Landing({ language }) {
                 }
               </p>
               <button
-                onClick={() => setShowVendorSignup(true)}
+                onClick={() => onOpen('vendor')}
                 className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold py-3 px-4 rounded-xl text-base transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
               >
                 {language === 'hi' ? 'वेंडर पंजीकरण' : 'Vendor Registration'}
@@ -98,7 +95,7 @@ export default function Landing({ language }) {
                 }
               </p>
               <button
-                onClick={() => setShowSupplierSignup(true)}
+                onClick={() => onOpen('supplier')}
                 className="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-xl text-base transition-all duration-300 transform hover:scale-105 flex items-center justify-center gap-2"
               >
                 {language === 'hi' ? 'आपूर्तिकर्ता पंजीकरण' : 'Supplier Registration'}
@@ -114,7 +111,7 @@ export default function Landing({ language }) {
             {language === 'hi' ? 'पहले से ही खाता है?' : 'Already have an account?'}
           </p>
           <button
-            onClick={() => setShowLogin(true)}
+            onClick={() => onOpen('login')}
             className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white font-semibold py-2 px-6 rounded-xl text-base transition-all duration-300 transform hover:scale-105 flex items-center gap-2 mx-auto"
           >
             <CheckCircle className="w-4 h-4" />
@@ -141,24 +138,7 @@ export default function Landing({ language }) {
         </div>
       </div>
 
-      {/* Modals */}
-      {showVendorSignup && (
-        <SignupVendor
-          onClose={() => setShowVendorSignup(false)}
-          language={language}
-        />
-      )}
-
-      {showSupplierSignup && (
-        <SignupSupplier
-          onClose={() => setShowSupplierSignup(false)}
-          language={language}
-        />
-      )}
-
-      {showLogin && (
-        <Login onClose={() => setShowLogin(false)} language={language} />
-      )}
+      {/* Modals are now handled in App.jsx */}
     </div>
   );
 }
