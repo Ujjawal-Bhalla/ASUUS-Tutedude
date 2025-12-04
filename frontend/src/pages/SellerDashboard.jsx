@@ -24,7 +24,7 @@ import {
 } from 'lucide-react';
 import apiService from '../services/api';
 
-export default function SellerDashboard({ language }) {
+export default function SellerDashboard({ language, user, onLogout, notificationCount, updateNotificationCount }) {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [analytics, setAnalytics] = useState(null);
@@ -37,28 +37,11 @@ export default function SellerDashboard({ language }) {
   const [sortBy, setSortBy] = useState('recent');
   const [loading, setLoading] = useState(true);
 
-  // Get user data from localStorage
-  const [user, setUser] = useState(null);
-  
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('user');
-        navigate('/');
-      }
-    } else {
-      navigate('/');
-    }
-  }, [navigate]);
-
-  // Handle logout
+  // Handle logout - use the prop from App.jsx
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    if (onLogout) {
+      onLogout();
+    }
     navigate('/');
   };
 
@@ -131,20 +114,41 @@ export default function SellerDashboard({ language }) {
   }, [user, language]);
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    if (!product) return false;
+    const matchesSearch = (product.name?.toLowerCase().includes(searchQuery.toLowerCase()) || false) ||
+                         (product.description?.toLowerCase().includes(searchQuery.toLowerCase()) || false);
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
   const handleAddProduct = async (newProduct) => {
     try {
+      console.log('Creating product:', newProduct);
       const createdProduct = await apiService.createProduct(newProduct);
-      setProducts(prev => [...prev, createdProduct]);
+      console.log('Product created successfully:', createdProduct);
+      
+      // Add to products list
+      setProducts(prev => [createdProduct, ...prev]);
       setShowAddModal(false);
+      
+      // Refresh analytics to update product counts
+      try {
+        const updatedAnalytics = await apiService.getSupplierAnalytics();
+        if (updatedAnalytics) {
+          setAnalytics(updatedAnalytics);
+        }
+      } catch (analyticsError) {
+        console.error('Error refreshing analytics:', analyticsError);
+        // Don't show error to user, analytics will update on next page load
+      }
+      
+      // Show success message
+      alert(language === 'hi' ? 'उत्पाद सफलतापूर्वक जोड़ा गया!' : 'Product added successfully!');
     } catch (error) {
       console.error('Error creating product:', error);
-      alert('Failed to create product');
+      alert(language === 'hi' 
+        ? `उत्पाद जोड़ने में त्रुटि: ${error.message || 'अज्ञात त्रुटि'}` 
+        : `Failed to create product: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -152,6 +156,17 @@ export default function SellerDashboard({ language }) {
     try {
       await apiService.deleteProduct(productId);
       setProducts(prev => prev.filter(p => p._id !== productId));
+      
+      // Refresh analytics to update product counts
+      try {
+        const updatedAnalytics = await apiService.getSupplierAnalytics();
+        if (updatedAnalytics) {
+          setAnalytics(updatedAnalytics);
+        }
+      } catch (analyticsError) {
+        console.error('Error refreshing analytics:', analyticsError);
+        // Don't show error to user, analytics will update on next page load
+      }
     } catch (error) {
       console.error('Error deleting product:', error);
       alert('Failed to delete product');
@@ -427,6 +442,18 @@ export default function SellerDashboard({ language }) {
           analytics={analytics}
           orders={orders}
           onClose={() => setShowAnalytics(false)}
+          onRefresh={async () => {
+            try {
+              const [updatedAnalytics, updatedOrders] = await Promise.all([
+                apiService.getSupplierAnalytics(),
+                apiService.getSupplierOrders()
+              ]);
+              if (updatedAnalytics) setAnalytics(updatedAnalytics);
+              if (updatedOrders) setOrders(updatedOrders);
+            } catch (error) {
+              console.error('Error refreshing analytics:', error);
+            }
+          }}
           language={language}
         />
       )}
@@ -451,11 +478,19 @@ function AddProductModal({ onClose, onAdd, language }) {
     category: 'street-food',
     description: '',
     stock: '',
+    unit: 'kg', // Required field
     image: ''
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    
+    // Validate required fields
+    if (!formData.name || !formData.price || !formData.description || !formData.stock || !formData.unit) {
+      alert(language === 'hi' ? 'कृपया सभी आवश्यक फ़ील्ड भरें' : 'Please fill all required fields');
+      return;
+    }
+    
     onAdd({
       ...formData,
       price: parseFloat(formData.price),
@@ -501,9 +536,12 @@ function AddProductModal({ onClose, onAdd, language }) {
               <input
                 type="number"
                 required
+                min="0"
+                step="0.01"
                 value={formData.price}
                 onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="0.00"
               />
             </div>
 
@@ -514,10 +552,33 @@ function AddProductModal({ onClose, onAdd, language }) {
               <input
                 type="number"
                 required
+                min="0"
                 value={formData.stock}
                 onChange={(e) => setFormData(prev => ({ ...prev, stock: e.target.value }))}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                placeholder="0"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                {language === 'hi' ? 'इकाई' : 'Unit'} <span className="text-red-500">*</span>
+              </label>
+              <select
+                required
+                value={formData.unit}
+                onChange={(e) => setFormData(prev => ({ ...prev, unit: e.target.value }))}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              >
+                <option value="kg">{language === 'hi' ? 'किलोग्राम' : 'Kilogram (kg)'}</option>
+                <option value="g">{language === 'hi' ? 'ग्राम' : 'Gram (g)'}</option>
+                <option value="l">{language === 'hi' ? 'लीटर' : 'Liter (l)'}</option>
+                <option value="ml">{language === 'hi' ? 'मिलीलीटर' : 'Milliliter (ml)'}</option>
+                <option value="piece">{language === 'hi' ? 'टुकड़ा' : 'Piece'}</option>
+                <option value="pack">{language === 'hi' ? 'पैक' : 'Pack'}</option>
+              </select>
             </div>
           </div>
 
@@ -576,7 +637,20 @@ function AddProductModal({ onClose, onAdd, language }) {
 }
 
 // Analytics Modal Component
-function AnalyticsModal({ analytics, orders, onClose, language }) {
+function AnalyticsModal({ analytics, orders, onClose, onRefresh, language }) {
+  const [refreshing, setRefreshing] = React.useState(false);
+
+  const handleRefresh = async () => {
+    if (onRefresh) {
+      setRefreshing(true);
+      try {
+        await onRefresh();
+      } finally {
+        setRefreshing(false);
+      }
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800';
@@ -605,15 +679,30 @@ function AnalyticsModal({ analytics, orders, onClose, language }) {
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-y-auto relative">
         <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white rounded-t-2xl sticky top-0">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 text-white hover:text-gray-200 transition-colors"
-          >
-            ×
-          </button>
-          <h2 className="text-2xl font-bold text-center">
-            {language === 'hi' ? 'विश्लेषण डैशबोर्ड' : 'Analytics Dashboard'}
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-center flex-1">
+              {language === 'hi' ? 'विश्लेषण डैशबोर्ड' : 'Analytics Dashboard'}
+            </h2>
+            <div className="flex items-center space-x-2">
+              {onRefresh && (
+                <button
+                  onClick={handleRefresh}
+                  disabled={refreshing}
+                  className="px-3 py-1 bg-white/20 hover:bg-white/30 rounded-lg transition-colors disabled:opacity-50 flex items-center space-x-2"
+                  title={language === 'hi' ? 'ताज़ा करें' : 'Refresh'}
+                >
+                  <BarChart3 className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                  <span className="text-sm">{language === 'hi' ? 'ताज़ा करें' : 'Refresh'}</span>
+                </button>
+              )}
+              <button
+                onClick={onClose}
+                className="text-white hover:text-gray-200 transition-colors text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+          </div>
         </div>
 
         <div className="p-6">

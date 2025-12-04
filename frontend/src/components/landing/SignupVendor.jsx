@@ -107,9 +107,15 @@ export default function SignupVendor({ onClose, language, onLogin }) {
         }),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Registration failed' }));
+        setErrors(prev => ({ ...prev, general: errorData.message || 'Registration failed. Please try again.' }));
+        return;
+      }
+
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && data.data) {
         // Real registration successful - auto login
         const user = data.data.user;
         const token = data.data.token;
@@ -123,7 +129,7 @@ export default function SignupVendor({ onClose, language, onLogin }) {
           window.location.href = '/#/vendor-dashboard';
         }
       } else {
-        setErrors(prev => ({ ...prev, general: data.message }));
+        setErrors(prev => ({ ...prev, general: data.message || 'Registration failed. Please try again.' }));
       }
     } catch (error) {
       console.log('Backend not available, using hackathon mode');

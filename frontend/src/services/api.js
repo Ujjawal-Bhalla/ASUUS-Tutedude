@@ -1,4 +1,10 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+// API base URL - should point to the backend server root, not /api
+// The /api prefix is added in the route paths
+const API_BASE_URL = import.meta.env.VITE_API_URL 
+  ? (import.meta.env.VITE_API_URL.endsWith('/api') 
+      ? import.meta.env.VITE_API_URL 
+      : `${import.meta.env.VITE_API_URL}/api`)
+  : 'http://localhost:3000/api';
 
 class ApiService {
   constructor() {
@@ -48,27 +54,57 @@ class ApiService {
 
   // Products API calls
   async getProducts(filters = {}) {
-    const params = new URLSearchParams(filters);
-    const response = await fetch(`${this.baseURL}/products?${params}`, {
-      headers: this.getAuthHeaders()
-    });
-    return response.json();
+    try {
+      const params = new URLSearchParams(filters);
+      const response = await fetch(`${this.baseURL}/products?${params}`, {
+        headers: this.getAuthHeaders()
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return [];
+    }
   }
 
   async getMyProducts() {
-    const response = await fetch(`${this.baseURL}/products/my-products`, {
-      headers: this.getAuthHeaders()
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${this.baseURL}/products/my-products`, {
+        headers: this.getAuthHeaders()
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      return [];
+    }
   }
 
   async createProduct(productData) {
-    const response = await fetch(`${this.baseURL}/products`, {
-      method: 'POST',
-      headers: this.getAuthHeaders(),
-      body: JSON.stringify(productData)
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${this.baseURL}/products`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify(productData)
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Failed to create product' }));
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error creating product:', error);
+      throw error;
+    }
   }
 
   async updateProduct(productId, productData) {
@@ -97,17 +133,35 @@ class ApiService {
 
   // Orders API calls
   async getMyOrders() {
-    const response = await fetch(`${this.baseURL}/orders/my-orders`, {
-      headers: this.getAuthHeaders()
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${this.baseURL}/orders/my-orders`, {
+        headers: this.getAuthHeaders()
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching orders:', error);
+      return [];
+    }
   }
 
   async getSupplierOrders() {
-    const response = await fetch(`${this.baseURL}/orders/supplier-orders`, {
-      headers: this.getAuthHeaders()
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${this.baseURL}/orders/supplier-orders`, {
+        headers: this.getAuthHeaders()
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      return Array.isArray(data) ? data : [];
+    } catch (error) {
+      console.error('Error fetching supplier orders:', error);
+      return [];
+    }
   }
 
   async createOrder(orderData) {
@@ -146,17 +200,33 @@ class ApiService {
 
   // Analytics API calls
   async getVendorAnalytics() {
-    const response = await fetch(`${this.baseURL}/analytics/vendor`, {
-      headers: this.getAuthHeaders()
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/vendor`, {
+        headers: this.getAuthHeaders()
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching vendor analytics:', error);
+      return null;
+    }
   }
 
   async getSupplierAnalytics() {
-    const response = await fetch(`${this.baseURL}/analytics/supplier`, {
-      headers: this.getAuthHeaders()
-    });
-    return response.json();
+    try {
+      const response = await fetch(`${this.baseURL}/analytics/supplier`, {
+        headers: this.getAuthHeaders()
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching supplier analytics:', error);
+      return null;
+    }
   }
 }
 

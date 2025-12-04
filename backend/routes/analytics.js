@@ -49,9 +49,14 @@ router.get('/vendor', protect, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(5);
 
-    // Category breakdown
+    // Category breakdown (exclude cancelled orders)
     const categoryBreakdown = await Order.aggregate([
-      { $match: { vendor: req.user._id } },
+      { 
+        $match: { 
+          vendor: req.user._id,
+          status: { $ne: 'cancelled' } // Exclude cancelled orders
+        } 
+      },
       { $unwind: '$items' },
       {
         $lookup: {
@@ -138,9 +143,14 @@ router.get('/supplier', protect, async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(5);
 
-    // Top selling products
+    // Top selling products (only count delivered/shipped orders)
     const topProducts = await Order.aggregate([
-      { $match: { supplier: req.user._id } },
+      { 
+        $match: { 
+          supplier: req.user._id,
+          status: { $in: ['delivered', 'shipped', 'confirmed', 'preparing'] } // Exclude cancelled orders
+        } 
+      },
       { $unwind: '$items' },
       {
         $lookup: {

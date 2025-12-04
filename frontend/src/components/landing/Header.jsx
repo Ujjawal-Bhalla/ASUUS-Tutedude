@@ -53,7 +53,7 @@ export default function Header({
 
           {/* Navigation and User Section */}
           <div className="flex items-center space-x-4">
-            {user ? (
+            {user && (
               // Authenticated User Navigation
               <>
                 {/* Notifications */}
@@ -91,22 +91,6 @@ export default function Header({
                   {language === 'hi' ? 'लॉगआउट' : 'Logout'}
                 </button>
               </>
-            ) : (
-              // Guest Navigation
-              <div className="flex items-center space-x-3">
-                <button
-                  onClick={() => onOpen('login')}
-                  className="px-4 py-2 text-indigo-600 hover:text-indigo-700 transition-colors duration-300"
-                >
-                  {language === 'hi' ? 'लॉगिन' : 'Login'}
-                </button>
-                <button
-                  onClick={() => onOpen('vendor')}
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-300"
-                >
-                  {language === 'hi' ? 'शुरू करें' : 'Get Started'}
-                </button>
-              </div>
             )}
           </div>
         </div>

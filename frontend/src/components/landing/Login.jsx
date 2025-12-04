@@ -85,9 +85,18 @@ export default function Login({ onClose, language, onLogin }) {
         body: JSON.stringify(formData),
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Login failed' }));
+        setErrors(prev => ({ 
+          ...prev, 
+          general: errorData.message || 'Invalid email or password. Please try again.' 
+        }));
+        return;
+      }
+
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && data.data) {
         // User authenticated successfully
         const user = data.data.user;
         const token = data.data.token;
@@ -112,7 +121,7 @@ export default function Login({ onClose, language, onLogin }) {
         }
       } else {
         // Authentication failed
-        setErrors(prev => ({ ...prev, general: data.message }));
+        setErrors(prev => ({ ...prev, general: data.message || 'Login failed. Please try again.' }));
       }
       
     } catch (error) {

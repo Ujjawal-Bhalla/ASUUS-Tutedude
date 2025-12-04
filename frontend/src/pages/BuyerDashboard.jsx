@@ -20,15 +20,16 @@ import {
   TrendingDown,
   Users,
   Plus,
-  Minus
+  Minus,
+  DollarSign,
+  X,
+  SlidersHorizontal,
+  ArrowUpDown
 } from 'lucide-react';
 import apiService from '../services/api';
 
-export default function BuyerDashboard({ language }) {
+export default function BuyerDashboard({ language, user, onLogout, notificationCount, updateNotificationCount }) {
   const navigate = useNavigate();
-  
-
-  
   const [products, setProducts] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [orders, setOrders] = useState([]);
@@ -36,41 +37,26 @@ export default function BuyerDashboard({ language }) {
   const [wishlist, setWishlist] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 500]);
+  const [priceRange, setPriceRange] = useState([0, 1000]);
   const [selectedArea, setSelectedArea] = useState('all');
   const [sortBy, setSortBy] = useState('recent');
   const [loading, setLoading] = useState(true);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showCart, setShowCart] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
 
-  // Get user data from localStorage
-  const [user, setUser] = useState(null);
-  
-  useEffect(() => {
-    const savedUser = localStorage.getItem('user');
-    if (savedUser) {
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (error) {
-        console.error('Error parsing saved user:', error);
-        localStorage.removeItem('user');
-        navigate('/');
-      }
-    } else {
-      navigate('/');
-    }
-  }, [navigate]);
-
-  // Handle logout
+  // Handle logout - use the prop from App.jsx
   const handleLogout = () => {
-    localStorage.removeItem('user');
-    localStorage.removeItem('token');
+    if (onLogout) {
+      onLogout();
+    }
     navigate('/');
   };
 
-  // Mock categories
+  // Categories
   const categories = [
     { id: 'all', name: language === 'hi' ? 'सभी श्रेणियाँ' : 'All Categories' },
+    { id: 'ingredients', name: language === 'hi' ? 'सामग्री' : 'Ingredients' },
     { id: 'street-food', name: language === 'hi' ? 'स्ट्रीट फूड' : 'Street Food' },
     { id: 'beverages', name: language === 'hi' ? 'पेय पदार्थ' : 'Beverages' },
     { id: 'snacks', name: language === 'hi' ? 'स्नैक्स' : 'Snacks' },
@@ -156,15 +142,43 @@ export default function BuyerDashboard({ language }) {
     }
   }, [user, language]);
 
+  // Get unique suppliers for filter
+  const uniqueSuppliers = [...new Set(products.map(p => p.supplier?.name).filter(Boolean))];
+
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.vendor.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = product.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         product.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         (product.supplier?.name && product.supplier.name.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesCategory = selectedCategory === 'all' || product.category === selectedCategory;
-    const matchesArea = selectedArea === 'all' || product.area === selectedArea;
+    const matchesArea = selectedArea === 'all' || (product.area && product.area === selectedArea);
     const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1];
     return matchesSearch && matchesCategory && matchesArea && matchesPrice;
   });
+
+  // Sort products
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    switch (sortBy) {
+      case 'price-low':
+        return a.price - b.price;
+      case 'price-high':
+        return b.price - a.price;
+      case 'name':
+        return a.name.localeCompare(b.name);
+      case 'rating':
+        return (b.rating || 0) - (a.rating || 0);
+      case 'recent':
+      default:
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+    }
+  });
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedCategory('all');
+    setPriceRange([0, 1000]);
+    setSelectedArea('all');
+    setSortBy('recent');
+  };
 
   const addToCart = (product) => {
     setCart(prev => {
@@ -210,22 +224,45 @@ export default function BuyerDashboard({ language }) {
     if (cart.length === 0) return;
     
     try {
-      const orderData = {
-        items: cart.map(item => ({
+      // Get supplier ID - handle both populated and non-populated supplier
+      const firstItem = cart[0];
+      const supplierId = firstItem.supplier?._id || firstItem.supplier || null;
+      
+      if (!supplierId) {
+        alert('Unable to determine supplier. Please try again.');
+        return;
+      }
+      
+      // Group items by supplier (in case of multiple suppliers)
+      const itemsBySupplier = {};
+      cart.forEach(item => {
+        const itemSupplierId = item.supplier?._id || item.supplier || supplierId;
+        if (!itemsBySupplier[itemSupplierId]) {
+          itemsBySupplier[itemSupplierId] = [];
+        }
+        itemsBySupplier[itemSupplierId].push({
           productId: item._id,
           quantity: item.quantity
-        })),
-        supplierId: cart[0].supplier._id, // Assuming all items from same supplier
-        deliveryAddress: user.address,
-        notes: 'Order from Ventrest'
-      };
+        });
+      });
       
-      await apiService.createOrder(orderData);
+      // Create orders for each supplier
+      const orderPromises = Object.entries(itemsBySupplier).map(([supplierId, items]) => {
+        const orderData = {
+          items,
+          supplierId,
+          deliveryAddress: user.address || {},
+          notes: 'Order from Ventrest'
+        };
+        return apiService.createOrder(orderData);
+      });
+      
+      await Promise.all(orderPromises);
       setCart([]);
       alert('Order created successfully!');
     } catch (error) {
       console.error('Error creating order:', error);
-      alert('Failed to create order');
+      alert('Failed to create order: ' + (error.message || 'Unknown error'));
     }
   };
 
@@ -308,6 +345,196 @@ export default function BuyerDashboard({ language }) {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Search Bar and Filters */}
+        <div className="mb-8 space-y-4">
+          {/* Search Bar */}
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder={language === 'hi' ? 'उत्पाद, विक्रेता या विवरण खोजें...' : 'Search products, suppliers, or descriptions...'}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent text-lg"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+          </div>
+
+          {/* Filter Toggle and Quick Filters */}
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-colors ${
+                showFilters
+                  ? 'bg-green-500 text-white'
+                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              }`}
+            >
+              <SlidersHorizontal className="w-4 h-4" />
+              <span className="text-sm font-medium">
+                {language === 'hi' ? 'फ़िल्टर' : 'Filters'}
+              </span>
+            </button>
+
+            {/* Quick Category Filters */}
+            <div className="flex flex-wrap gap-2">
+              {categories.map(category => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    selectedCategory === category.id
+                      ? 'bg-green-500 text-white'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  {category.name}
+                </button>
+              ))}
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="ml-auto flex items-center space-x-2">
+              <ArrowUpDown className="w-4 h-4 text-gray-500" />
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
+                <option value="recent">{language === 'hi' ? 'हाल ही में' : 'Most Recent'}</option>
+                <option value="price-low">{language === 'hi' ? 'कीमत: कम से ज्यादा' : 'Price: Low to High'}</option>
+                <option value="price-high">{language === 'hi' ? 'कीमत: ज्यादा से कम' : 'Price: High to Low'}</option>
+                <option value="name">{language === 'hi' ? 'नाम' : 'Name (A-Z)'}</option>
+                <option value="rating">{language === 'hi' ? 'रेटिंग' : 'Highest Rated'}</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Advanced Filters Panel */}
+          {showFilters && (
+            <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-lg">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900">
+                  {language === 'hi' ? 'उन्नत फ़िल्टर' : 'Advanced Filters'}
+                </h3>
+                <button
+                  onClick={clearFilters}
+                  className="text-sm text-red-500 hover:text-red-700 font-medium"
+                >
+                  {language === 'hi' ? 'सभी साफ़ करें' : 'Clear All'}
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Price Range */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {language === 'hi' ? 'कीमत सीमा' : 'Price Range'}
+                  </label>
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-4">
+                      <input
+                        type="number"
+                        min="0"
+                        max="1000"
+                        value={priceRange[0]}
+                        onChange={(e) => setPriceRange([parseInt(e.target.value) || 0, priceRange[1]])}
+                        className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        placeholder="Min"
+                      />
+                      <span className="text-gray-500">-</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="1000"
+                        value={priceRange[1]}
+                        onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value) || 1000])}
+                        className="w-24 px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                        placeholder="Max"
+                      />
+                    </div>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1000"
+                      value={priceRange[1]}
+                      onChange={(e) => setPriceRange([priceRange[0], parseInt(e.target.value)])}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-gray-500">
+                      <span>₹0</span>
+                      <span>₹{priceRange[0]} - ₹{priceRange[1]}</span>
+                      <span>₹1000</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Area Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    {language === 'hi' ? 'क्षेत्र' : 'Area'}
+                  </label>
+                  <select
+                    value={selectedArea}
+                    onChange={(e) => setSelectedArea(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  >
+                    {areas.map(area => (
+                      <option key={area.id} value={area.id}>{area.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {/* Active Filters Summary */}
+              {(selectedCategory !== 'all' || priceRange[0] > 0 || priceRange[1] < 1000 || selectedArea !== 'all' || searchQuery) && (
+                <div className="mt-4 pt-4 border-t border-gray-200">
+                  <p className="text-sm font-medium text-gray-700 mb-2">
+                    {language === 'hi' ? 'सक्रिय फ़िल्टर:' : 'Active Filters:'}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedCategory !== 'all' && (
+                      <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">
+                        {categories.find(c => c.id === selectedCategory)?.name}
+                      </span>
+                    )}
+                    {(priceRange[0] > 0 || priceRange[1] < 1000) && (
+                      <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                        ₹{priceRange[0]} - ₹{priceRange[1]}
+                      </span>
+                    )}
+                    {selectedArea !== 'all' && (
+                      <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                        {areas.find(a => a.id === selectedArea)?.name}
+                      </span>
+                    )}
+                    {searchQuery && (
+                      <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs font-medium">
+                        "{searchQuery}"
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Results Count */}
+          <div className="text-sm text-gray-600">
+            {language === 'hi' 
+              ? `${sortedProducts.length} उत्पाद मिले (कुल ${products.length})`
+              : `Showing ${sortedProducts.length} products (of ${products.length} total)`
+            }
+          </div>
+        </div>
+
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 border border-white/20 shadow-lg">
@@ -361,7 +588,7 @@ export default function BuyerDashboard({ language }) {
 
         {/* Products Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredProducts.map(product => (
+          {sortedProducts.map(product => (
             <ProductCard 
               key={product._id} 
               product={product} 
@@ -373,7 +600,7 @@ export default function BuyerDashboard({ language }) {
         </div>
 
         {/* Empty State */}
-        {filteredProducts.length === 0 && (
+        {sortedProducts.length === 0 && (
           <div className="text-center py-12">
             <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">

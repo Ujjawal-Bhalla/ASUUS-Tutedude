@@ -11,6 +11,9 @@ const analyticsRoutes = require("./routes/analytics");
 
 const app = express();
 
+// Define PORT before using it
+const PORT = process.env.PORT || 3000;
+
 // Connect to MongoDB with error handling
 const initializeServer = async () => {
   try {
@@ -28,12 +31,22 @@ const initializeServer = async () => {
       console.log('Contains database:', uri.includes('/ventrest'));
     }
     
-    await connectDB();
-    console.log('✅ MongoDB connected successfully');
+    const dbConnection = await connectDB();
+    if (dbConnection) {
+      console.log('✅ MongoDB connected successfully');
+    } else {
+      console.warn('⚠️  MongoDB connection failed - server starting without database');
+      console.warn('💡 Some features may not work until MongoDB is connected');
+    }
     
-    // Start server after successful MongoDB connection
+    // Start server (even if MongoDB connection failed in development)
     const server = app.listen(PORT, "0.0.0.0", () => {
       console.log(`✅ Server running on port ${PORT}`);
+      console.log(`🌐 API available at http://localhost:${PORT}`);
+      console.log(`📡 Health check: http://localhost:${PORT}/health`);
+      if (!dbConnection) {
+        console.warn('⚠️  Note: Database not connected - API endpoints may fail');
+      }
     });
 
     // Graceful shutdown handling
@@ -101,8 +114,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
-
-const PORT = process.env.PORT || 3000;
 
 // Routes
 app.use('/api/auth', authRoutes);
